@@ -147,10 +147,12 @@
 #### 2.1 Employee Module
 - [ ] **Employee List Page** with filtering & pagination
 - [ ] **Employee Detail View** with all related data
-- [ ] **Employee Form** (Create/Edit)
+- [ ] **Employee Form** (Create/Edit) - Auto-generates employee_code via `fn_generate_employee_code(business_id)`
 - [ ] **Employee Type Selection** (India/USA Internal, IT, Healthcare)
 - [ ] **Address History Management** (temporal addresses)
-- [ ] **Employee Search** with advanced filters
+- [ ] **Employee Search** with advanced filters (by employee_code, name, type)
+
+**Employee Code Format:** `<business_short_name><5-digit-seq>` (e.g., `IES00001` for Intuites LLC)
 
 **Components:**
 - `EmployeeManager.jsx`
@@ -161,7 +163,7 @@
 
 **Edge Functions:**
 - `listEmployees` - List with tenant filtering
-- `createEmployee` - Create with audit trail
+- `createEmployee` - Create with audit trail, auto-generate employee_code using `fn_generate_employee_code(business_id)`
 - `updateEmployee` - Update with history tracking
 - `deleteEmployee` - Soft delete
 

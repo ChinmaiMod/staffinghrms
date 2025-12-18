@@ -114,8 +114,9 @@ require_employee_type: true
 
 **Usage:**
 - Template: "IT USA Immigration Checklist"
-- Entity: Employee (John Doe, employee_id: abc-123)
+- Entity: Employee (John Doe, employee_code: IES00001, employee_id: abc-123)
 - Documents map to: hrms_employees.employee_id = 'abc-123'
+- Note: `employee_code` (e.g., IES00001) is for display; `employee_id` (UUID) is for DB references
 
 ---
 

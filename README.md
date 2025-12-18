@@ -19,6 +19,7 @@ Staffing HRMS is a comprehensive employee management system designed for staffin
 
 ✅ **Employee Management**
 - Complete employee profiles with multi-type support
+- **Employee Code Format:** `<business_short_name><5-digit-seq>` (e.g., `IES00001` for Intuites LLC)
 - Time-based address history tracking
 - SSN encryption and secure data handling
 
@@ -99,11 +100,13 @@ D:\Staffing-HRMS\
 
 ## 🗄️ Database Schema
 
-**26 Core Tables** (all prefixed with `hrms_`) - Reduced from 29 via universal checklist architecture
+**35 Core Tables** (all prefixed with `hrms_`) - Optimized via universal checklist architecture
 
 ### Core Tables
-- `hrms_employees` - Employee master data
+- `hrms_employees` - Employee master data (employee_code format: `IES00001`)
+- `hrms_employee_sequences` - Auto-increment sequence per business for employee codes
 - `hrms_employee_addresses` - Time-based address history
+- `hrms_checklist_types` - Admin-configurable checklist type definitions
 - `hrms_checklist_templates` - **UNIVERSAL** checklist templates for ALL document types
 - `hrms_checklist_groups` - Document grouping (e.g., Educational Docs, Project Docs)
 - `hrms_checklist_items` - Individual checklist items
@@ -111,19 +114,27 @@ D:\Staffing-HRMS\
 
 ### Project Management
 - `hrms_projects` - Employee projects with financials
+- `hrms_project_rate_history` - Tracks rate changes with effective dates
 - `hrms_project_vendors` - Vendor chain (up to 10 levels)
-- ~~`hrms_project_msa_po`~~ - **REMOVED:** Now via universal checklist (MSA/PO documents)
-- ~~`hrms_project_coi`~~ - **REMOVED:** Now via universal checklist (COI documents)
 - `hrms_timesheets` - Time tracking
 - `hrms_timesheet_entries` - Daily time entries
 
 ### Visa & Immigration
 - `hrms_visa_statuses` - Visa history with expiry tracking
 - `hrms_dependents` - Family members
+- `hrms_lca_job_titles` - LCA job titles for H1B/L1 compliance with SOC codes
 
 ### Compliance
 - `hrms_compliance_items` - Compliance tracking
 - `hrms_compliance_reminders` - Automated reminder schedules
+
+### Employee Tickets/Support System ⭐ NEW
+- `hrms_tickets` - **NEW:** Employee support tickets (HR/Immigration departments)
+- `hrms_ticket_sequences` - **NEW:** Auto-generated ticket numbers (TKT-2025-0042)
+- `hrms_ticket_comments` - **NEW:** Comments and messages on tickets
+- `hrms_ticket_attachments` - **NEW:** File attachments for tickets
+- `hrms_ticket_status_history` - **NEW:** Status change audit trail
+- `hrms_ticket_request_types` - **NEW:** Configurable request types per department
 
 ### Additional Features
 - `hrms_employee_resumes` - Multiple resumes per employee
@@ -132,8 +143,18 @@ D:\Staffing-HRMS\
 - `hrms_notifications` - In-app notifications
 - `hrms_email_templates` - Customizable email templates
 - `hrms_newsletters` - Employee communications
+- `hrms_ai_prompts` - AI prompt templates for newsletter generation
 - `hrms_suggestions` - Ideas and feedback
 - `hrms_issue_reports` - Bug tracking
+- `crm_hrms_contact_bridge` - CRM integration bridge
+
+### CRM-Linked Reference Tables (Managed in CRM, Referenced in HRMS)
+- `businesses` - Company/business entities
+- `countries` - Country reference data
+- `states` - State/province reference data
+- `cities` - City reference data
+- `job_title` - IT job titles
+- `visa_status` - Visa type reference data
 
 **See `HRMS_DATA_MODEL.md` for complete schema details.**
 
@@ -398,7 +419,7 @@ HRMS Dashboard
 - **Trigger:** When CRM contact becomes "Placed into Job"
 
 ### Shared Resources
-- Lookup tables (job_title, visa_status, cities, states, countries)
+- Lookup tables (`job_titles`, `visa_status`, `cities`, `states`, `countries`)
 - Tenant and business structure
 - User authentication
 - Stripe billing
