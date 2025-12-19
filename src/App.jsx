@@ -11,6 +11,7 @@ import { ClientList, ClientForm, ClientDetail } from './components/HRMS/Clients'
 import VendorManagement from './components/HRMS/Vendors/VendorManagement'
 import ProjectManagement from './components/HRMS/Projects/ProjectManagement'
 import DocumentManagement from './components/HRMS/Documents/DocumentManagement'
+import TimesheetManagement from './components/HRMS/Timesheets/TimesheetManagement'
 import LoginPage from './components/Auth/LoginPage'
 import LoadingSpinner from './components/Shared/LoadingSpinner'
 
@@ -73,6 +74,7 @@ function App() {
         <Route path="vendors/*" element={<VendorManagement />} />
         <Route path="projects/*" element={<ProjectManagement />} />
         <Route path="documents/*" element={<DocumentManagement />} />
+        <Route path="timesheets/*" element={<TimesheetManagement />} />
         <Route path="data-admin/*" element={<DataAdministration />} />
         {/* Additional routes will be added here */}
       </Route>
