@@ -9,6 +9,7 @@ import EmployeeTickets from './components/HRMS/Tickets/EmployeeTickets'
 import TicketDetailAdmin from './components/HRMS/Tickets/TicketDetailAdmin'
 import { ClientList, ClientForm, ClientDetail } from './components/HRMS/Clients'
 import VendorManagement from './components/HRMS/Vendors/VendorManagement'
+import ProjectManagement from './components/HRMS/Projects/ProjectManagement'
 import LoginPage from './components/Auth/LoginPage'
 import LoadingSpinner from './components/Shared/LoadingSpinner'
 
@@ -69,6 +70,7 @@ function App() {
         <Route path="clients/:clientId" element={<ClientDetail />} />
         <Route path="clients/:clientId/edit" element={<ClientForm />} />
         <Route path="vendors/*" element={<VendorManagement />} />
+        <Route path="projects/*" element={<ProjectManagement />} />
         <Route path="data-admin/*" element={<DataAdministration />} />
         {/* Additional routes will be added here */}
       </Route>
