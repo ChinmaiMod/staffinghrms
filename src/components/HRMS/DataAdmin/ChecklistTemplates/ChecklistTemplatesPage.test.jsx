@@ -70,30 +70,25 @@ const mockTemplates = [
   },
 ]
 
-const createQueryBuilder = () => {
-  const builder = {
-    select: vi.fn(() => builder),
-    eq: vi.fn(() => builder),
-    order: vi.fn(() => builder),
-    single: vi.fn(() => Promise.resolve({ data: null, error: null })),
-  }
-  return builder
-}
-
 let callCount = 0
 
 vi.mock('../../../../api/supabaseClient', () => {
-  const mockFrom = vi.fn((table) => {
-    const builder = createQueryBuilder()
-    callCount++
+  const createQueryBuilder = (table) => {
+    const builder = {
+      select: vi.fn(() => builder),
+      eq: vi.fn(() => builder),
+      order: vi.fn(() => builder),
+      single: vi.fn(() => Promise.resolve({ data: null, error: null })),
+    }
 
+    // Resolve based on table and call count
     if (table === 'hrms_checklist_types') {
       builder.select.mockResolvedValue({
         data: mockChecklistTypes,
         error: null,
       })
     } else if (table === 'hrms_checklist_templates') {
-      builder.select.mockResolvedValue({
+      builder.order.mockResolvedValue({
         data: mockTemplates,
         error: null,
       })
@@ -106,6 +101,11 @@ vi.mock('../../../../api/supabaseClient', () => {
     }
 
     return builder
+  }
+
+  const mockFrom = vi.fn((table) => {
+    callCount++
+    return createQueryBuilder(table)
   })
 
   return {

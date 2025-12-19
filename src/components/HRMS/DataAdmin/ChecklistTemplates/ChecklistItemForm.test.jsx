@@ -74,7 +74,7 @@ describe('ChecklistItemForm', () => {
     const onSave = vi.fn()
     renderComponent({ onSave })
 
-    const nameInput = screen.getByLabelText(/item name/i)
+    const nameInput = screen.getByPlaceholderText(/i-9 form/i)
     fireEvent.change(nameInput, { target: { value: 'Test Item' } })
 
     const submitButton = screen.getByText(/add item/i)
@@ -90,10 +90,10 @@ describe('ChecklistItemForm', () => {
     const onSave = vi.fn()
     renderComponent({ onSave })
 
-    const nameInput = screen.getByLabelText(/item name/i)
+    const nameInput = screen.getByPlaceholderText(/i-9 form/i)
     fireEvent.change(nameInput, { target: { value: 'Test Item' } })
 
-    const groupSelect = screen.getByLabelText(/group/i)
+    const groupSelect = screen.getByDisplayValue(/select group/i)
     fireEvent.change(groupSelect, { target: { value: 'group-001' } })
 
     const submitButton = screen.getByText(/add item/i)
@@ -136,7 +136,7 @@ describe('ChecklistItemForm', () => {
 
   it('should use default group when provided', () => {
     renderComponent({ defaultGroupId: 'group-002' })
-    const groupSelect = screen.getByLabelText(/group/i)
+    const groupSelect = screen.getByDisplayValue(/select group/i)
     expect(groupSelect.value).toBe('group-002')
   })
 

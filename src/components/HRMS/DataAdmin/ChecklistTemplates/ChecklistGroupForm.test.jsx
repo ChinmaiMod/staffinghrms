@@ -65,7 +65,7 @@ describe('ChecklistGroupForm', () => {
     const onSave = vi.fn()
     renderComponent({ onSave })
 
-    const nameInput = screen.getByLabelText(/group name/i)
+    const nameInput = screen.getByPlaceholderText(/immigration documents/i)
     fireEvent.change(nameInput, { target: { value: 'Test Group' } })
 
     const submitButton = screen.getByText(/add group/i)
@@ -94,11 +94,14 @@ describe('ChecklistGroupForm', () => {
     const onSave = vi.fn()
     renderComponent({ onSave })
 
-    const nameInput = screen.getByLabelText(/group name/i)
+    const nameInput = screen.getByPlaceholderText(/immigration documents/i)
     fireEvent.change(nameInput, { target: { value: 'Test Group' } })
 
-    const orderInput = screen.getByLabelText(/display order/i)
-    fireEvent.change(orderInput, { target: { value: '5' } })
+    const orderInputs = screen.getAllByRole('spinbutton')
+    const orderInput = orderInputs.find((input) => input.min === '0')
+    if (orderInput) {
+      fireEvent.change(orderInput, { target: { value: '5' } })
+    }
 
     const submitButton = screen.getByText(/add group/i)
     fireEvent.click(submitButton)

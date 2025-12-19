@@ -65,19 +65,37 @@ const mockEmailTemplates = [
 ]
 
 vi.mock('../../../../api/supabaseClient', () => {
-  const mockFrom = vi.fn(() => ({
-    select: vi.fn().mockReturnThis(),
-    eq: vi.fn().mockReturnThis(),
-    order: vi.fn().mockResolvedValue({
-      data: mockEmailTemplates,
-      error: null,
-    }),
-    delete: vi.fn().mockReturnThis(),
-  }))
+  let orderCallCount = 0
+  const createQueryBuilder = () => {
+    const builder = {
+      select: vi.fn(() => builder),
+      eq: vi.fn(() => builder),
+      order: vi.fn(() => {
+        orderCallCount++
+        // Resolve on third order() call (after 3 order() calls)
+        if (orderCallCount === 3) {
+          orderCallCount = 0
+          return Promise.resolve({
+            data: mockEmailTemplates,
+            error: null,
+          })
+        }
+        return builder
+      }),
+      delete: vi.fn(() => builder),
+    }
+    return builder
+  }
 
   return {
     supabase: {
-      from: mockFrom,
+      from: vi.fn(() => createQueryBuilder()),
+      auth: {
+        getSession: vi.fn().mockResolvedValue({
+          data: { session: { access_token: 'test-token' } },
+          error: null,
+        }),
+      },
     },
   }
 })

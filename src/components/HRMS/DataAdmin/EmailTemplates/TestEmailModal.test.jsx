@@ -50,9 +50,11 @@ describe('TestEmailModal', () => {
     vi.clearAllMocks()
   })
 
-  it('should render modal with template name', () => {
+  it('should render modal with template name', async () => {
     renderComponent()
-    expect(screen.getByText('Send Test Email')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /send test email/i })).toBeInTheDocument()
+    })
     expect(screen.getByText('Document Expiry Reminder')).toBeInTheDocument()
   })
 
@@ -67,7 +69,11 @@ describe('TestEmailModal', () => {
     const onSend = vi.fn()
     renderComponent({ onSend })
 
-    const submitButton = screen.getByText(/send test email/i)
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText(/admin@company.com/i)).toBeInTheDocument()
+    })
+
+    const submitButton = screen.getByRole('button', { name: /send test email/i })
     fireEvent.click(submitButton)
 
     await waitFor(() => {
@@ -80,10 +86,14 @@ describe('TestEmailModal', () => {
     const onSend = vi.fn()
     renderComponent({ onSend })
 
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText(/admin@company.com/i)).toBeInTheDocument()
+    })
+
     const emailInput = screen.getByPlaceholderText(/admin@company.com/i)
     fireEvent.change(emailInput, { target: { value: 'invalid-email' } })
 
-    const submitButton = screen.getByText(/send test email/i)
+    const submitButton = screen.getByRole('button', { name: /send test email/i })
     fireEvent.click(submitButton)
 
     await waitFor(() => {
@@ -96,10 +106,14 @@ describe('TestEmailModal', () => {
     const onSend = vi.fn().mockResolvedValue({})
     renderComponent({ onSend })
 
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText(/admin@company.com/i)).toBeInTheDocument()
+    })
+
     const emailInput = screen.getByPlaceholderText(/admin@company.com/i)
     fireEvent.change(emailInput, { target: { value: 'test@example.com' } })
 
-    const submitButton = screen.getByText(/send test email/i)
+    const submitButton = screen.getByRole('button', { name: /send test email/i })
     fireEvent.click(submitButton)
 
     await waitFor(() => {
@@ -117,13 +131,17 @@ describe('TestEmailModal', () => {
     const onSend = vi.fn().mockResolvedValue({})
     renderComponent({ onSend })
 
-    const employeeNameInput = screen.getByLabelText(/employee name/i)
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText(/john smith/i)).toBeInTheDocument()
+    })
+
+    const employeeNameInput = screen.getByPlaceholderText(/john smith/i)
     fireEvent.change(employeeNameInput, { target: { value: 'Jane Doe' } })
 
     const emailInput = screen.getByPlaceholderText(/admin@company.com/i)
     fireEvent.change(emailInput, { target: { value: 'test@example.com' } })
 
-    const submitButton = screen.getByText(/send test email/i)
+    const submitButton = screen.getByRole('button', { name: /send test email/i })
     fireEvent.click(submitButton)
 
     await waitFor(() => {
@@ -145,16 +163,20 @@ describe('TestEmailModal', () => {
     )
     renderComponent({ onSend })
 
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText(/admin@company.com/i)).toBeInTheDocument()
+    })
+
     const emailInput = screen.getByPlaceholderText(/admin@company.com/i)
     fireEvent.change(emailInput, { target: { value: 'test@example.com' } })
 
-    const submitButton = screen.getByText(/send test email/i)
+    const submitButton = screen.getByRole('button', { name: /send test email/i })
     fireEvent.click(submitButton)
 
     await waitFor(() => {
       expect(screen.getByText(/sending/i)).toBeInTheDocument()
-      expect(submitButton).toBeDisabled()
     })
+    expect(submitButton).toBeDisabled()
   })
 
   it('should call onClose when cancel is clicked', () => {
@@ -167,15 +189,21 @@ describe('TestEmailModal', () => {
     expect(onClose).toHaveBeenCalled()
   })
 
-  it('should display all variable categories', () => {
+  it('should display all variable categories', async () => {
     renderComponent()
-    expect(screen.getByText(/test data.*customize variables/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/employee name/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/document name/i)).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByText(/test data.*customize variables/i)).toBeInTheDocument()
+      expect(screen.getByPlaceholderText(/john smith/i)).toBeInTheDocument()
+      expect(screen.getByPlaceholderText(/h1b visa copy/i)).toBeInTheDocument()
+    })
   })
 
-  it('should update variables when availableVariables change', () => {
+  it('should update variables when availableVariables change', async () => {
     const { rerender } = renderComponent()
+
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText(/john smith/i)).toBeInTheDocument()
+    })
 
     const newVariables = {
       employee: [{ key: '{{new_var}}', label: 'New Variable' }],
@@ -183,6 +211,8 @@ describe('TestEmailModal', () => {
 
     rerender(<TestEmailModal {...defaultProps} availableVariables={newVariables} />)
 
-    expect(screen.getByLabelText(/new variable/i)).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByText(/new variable/i)).toBeInTheDocument()
+    })
   })
 })

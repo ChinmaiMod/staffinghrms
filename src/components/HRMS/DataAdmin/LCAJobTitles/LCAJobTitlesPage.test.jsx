@@ -51,20 +51,16 @@ const mockLCAJobTitles = [
   },
 ]
 
-const createQueryBuilder = () => {
-  const builder = {
-    select: vi.fn(() => builder),
-    eq: vi.fn(() => builder),
-    delete: vi.fn(() => builder),
-    order: vi.fn(() => builder),
-  }
-  return builder
-}
-
 vi.mock('../../../../api/supabaseClient', () => {
-  const mockFrom = vi.fn(() => {
-    const builder = createQueryBuilder()
-    builder.select.mockResolvedValue({
+  const createQueryBuilder = () => {
+    const builder = {
+      select: vi.fn(() => builder),
+      eq: vi.fn(() => builder),
+      delete: vi.fn(() => builder),
+      order: vi.fn(() => builder),
+    }
+    // Make order() resolve with data on final call
+    builder.order.mockResolvedValue({
       data: mockLCAJobTitles,
       error: null,
     })
@@ -73,11 +69,11 @@ vi.mock('../../../../api/supabaseClient', () => {
       error: null,
     })
     return builder
-  })
+  }
 
   return {
     supabase: {
-      from: mockFrom,
+      from: vi.fn(() => createQueryBuilder()),
     },
   }
 })

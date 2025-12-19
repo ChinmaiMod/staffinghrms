@@ -33,22 +33,17 @@ const mockChecklistTypes = [
   },
 ]
 
-const createQueryBuilder = () => {
-  const builder = {
-    select: vi.fn(() => builder),
-    eq: vi.fn(() => builder),
-    insert: vi.fn(() => builder),
-    update: vi.fn(() => builder),
-    delete: vi.fn(() => builder),
-    order: vi.fn(() => builder),
-    single: vi.fn(() => Promise.resolve({ data: null, error: null })),
-  }
-  return builder
-}
-
 vi.mock('../../../../api/supabaseClient', () => {
-  const mockFrom = vi.fn((table) => {
-    const builder = createQueryBuilder()
+  const createQueryBuilder = (table) => {
+    const builder = {
+      select: vi.fn(() => builder),
+      eq: vi.fn(() => builder),
+      insert: vi.fn(() => builder),
+      update: vi.fn(() => builder),
+      delete: vi.fn(() => builder),
+      order: vi.fn(() => builder),
+      single: vi.fn(() => Promise.resolve({ data: null, error: null })),
+    }
 
     if (table === 'hrms_checklist_types') {
       builder.select.mockResolvedValue({
@@ -77,11 +72,11 @@ vi.mock('../../../../api/supabaseClient', () => {
     }
 
     return builder
-  })
+  }
 
   return {
     supabase: {
-      from: mockFrom,
+      from: vi.fn((table) => createQueryBuilder(table)),
     },
   }
 })
