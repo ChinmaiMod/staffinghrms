@@ -1,0 +1,389 @@
+/* Project Detail Page Styles */
+
+.project-detail-container {
+  padding: var(--space-6, 24px);
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #6B7280;
+  text-decoration: none;
+  font-size: 14px;
+  margin-bottom: 24px;
+}
+
+.back-link:hover {
+  color: #3B82F6;
+}
+
+.project-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 32px;
+  padding: 24px;
+  background: white;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+}
+
+.project-header-content {
+  display: flex;
+  gap: 16px;
+  flex: 1;
+}
+
+.project-icon-large {
+  width: 48px;
+  height: 48px;
+  color: #3B82F6;
+  flex-shrink: 0;
+}
+
+.project-name-title {
+  font-size: 28px;
+  font-weight: 600;
+  color: #1F2937;
+  margin: 0 0 8px 0;
+}
+
+.project-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #6B7280;
+  margin-bottom: 8px;
+}
+
+.project-employee-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #374151;
+  margin-bottom: 4px;
+}
+
+.project-dates {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #6B7280;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.lca-badge-header {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: #DBEAFE;
+  color: #1E40AF;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.lca-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.icon-xs {
+  width: 14px;
+  height: 14px;
+}
+
+.icon-sm {
+  width: 18px;
+  height: 18px;
+}
+
+.project-header-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+
+.btn-secondary {
+  background: white;
+  color: #374151;
+  border: 1px solid #E5E7EB;
+}
+
+.btn-secondary:hover {
+  background: #F9FAFB;
+}
+
+.project-tabs {
+  display: flex;
+  gap: 8px;
+  border-bottom: 2px solid #E5E7EB;
+  margin-bottom: 24px;
+}
+
+.project-tab {
+  padding: 12px 20px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-size: 14px;
+  font-weight: 500;
+  color: #6B7280;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: -2px;
+}
+
+.project-tab:hover {
+  color: #3B82F6;
+}
+
+.project-tab.active {
+  color: #3B82F6;
+  border-bottom-color: #3B82F6;
+}
+
+.project-tab-content {
+  min-height: 400px;
+}
+
+.overview-tab {
+  padding: 24px;
+  background: white;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+}
+
+.overview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.overview-card {
+  padding: 20px;
+  background: #F9FAFB;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+}
+
+.overview-card h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1F2937;
+  margin: 0 0 16px 0;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #E5E7EB;
+}
+
+.financial-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+}
+
+.financial-label {
+  font-size: 14px;
+  color: #6B7280;
+}
+
+.financial-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1F2937;
+}
+
+.client-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.client-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1F2937;
+}
+
+.client-manager {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 14px;
+  color: #6B7280;
+}
+
+.vendor-chain-tab,
+.rate-history-tab,
+.documents-tab,
+.resumes-tab,
+.background-checks-tab {
+  padding: 24px;
+  background: white;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+}
+
+.vendor-chain-tab h3,
+.rate-history-tab h3,
+.documents-tab h3,
+.resumes-tab h3,
+.background-checks-tab h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1F2937;
+  margin: 0 0 24px 0;
+}
+
+.vendor-chain-visual {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.vendor-chain-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.vendor-chain-card {
+  padding: 16px;
+  background: white;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  width: 220px;
+  position: relative;
+}
+
+.vendor-level-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 2px 8px;
+  background: #F3F4F6;
+  color: #374151;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.vendor-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1F2937;
+  margin-bottom: 4px;
+}
+
+.vendor-contact {
+  font-size: 12px;
+  color: #6B7280;
+}
+
+.vendor-chain-arrow {
+  font-size: 24px;
+  color: #D1D5DB;
+  margin: 8px 0;
+}
+
+.rate-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.rate-history-item {
+  padding: 16px;
+  background: #F9FAFB;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+}
+
+.rate-history-item.current {
+  background: #D1FAE5;
+  border: 2px solid #10B981;
+}
+
+.rate-history-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.rate-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #065F46;
+}
+
+.current-badge {
+  padding: 2px 8px;
+  background: #065F46;
+  color: white;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.rate-history-details {
+  display: flex;
+  gap: 12px;
+  font-size: 13px;
+  color: #6B7280;
+}
+
+.error-banner {
+  padding: 16px;
+  background: #FEE2E2;
+  color: #991B1B;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.error-banner button {
+  padding: 8px 16px;
+  background: #991B1B;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.error-banner button:hover {
+  background: #7F1D1D;
+}
+
+.capitalize {
+  text-transform: capitalize;
+}

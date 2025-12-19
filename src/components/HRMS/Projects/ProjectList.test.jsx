@@ -7,25 +7,7 @@ import { render, screen, fireEvent, waitFor, within } from '@testing-library/rea
 import userEvent from '@testing-library/user-event'
 import { BrowserRouter } from 'react-router-dom'
 
-// Mock contexts at the top level before component imports
-vi.mock('../../../contexts/AuthProvider', () => ({
-  useAuth: () => ({
-    user: { id: 'test-user-id', email: 'test@example.com' },
-    loading: false,
-    profile: { id: 'test-profile-id', tenant_id: 'test-tenant-id' },
-  }),
-  AuthProvider: ({ children }) => children,
-}))
-
-vi.mock('../../../contexts/TenantProvider', () => ({
-  useTenant: () => ({
-    tenant: { id: 'test-tenant-id', company_name: 'Test Company', tenant_id: 'test-tenant-id' },
-    loading: false,
-    selectedBusiness: { id: 'test-business-id', business_name: 'Test Business', business_id: 'test-business-id' },
-  }),
-  TenantProvider: ({ children }) => children,
-}))
-
+// Define mock data before vi.mock to avoid hoisting issues
 const mockSupabaseData = {
   data: [
     {
@@ -51,6 +33,25 @@ const mockSupabaseData = {
   error: null,
   count: 1,
 }
+
+// Mock contexts at the top level before component imports
+vi.mock('../../../contexts/AuthProvider', () => ({
+  useAuth: () => ({
+    user: { id: 'test-user-id', email: 'test@example.com' },
+    loading: false,
+    profile: { id: 'test-profile-id', tenant_id: 'test-tenant-id' },
+  }),
+  AuthProvider: ({ children }) => children,
+}))
+
+vi.mock('../../../contexts/TenantProvider', () => ({
+  useTenant: () => ({
+    tenant: { id: 'test-tenant-id', company_name: 'Test Company', tenant_id: 'test-tenant-id' },
+    loading: false,
+    selectedBusiness: { id: 'test-business-id', business_name: 'Test Business', business_id: 'test-business-id' },
+  }),
+  TenantProvider: ({ children }) => children,
+}))
 
 vi.mock('../../../api/supabaseClient', () => ({
   supabase: {
