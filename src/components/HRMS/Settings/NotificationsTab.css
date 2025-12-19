@@ -1,0 +1,138 @@
+.notifications-tab {
+  width: 100%;
+}
+
+.notification-channels {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.channel-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.channel-label {
+  font-weight: 500;
+  color: #374151;
+}
+
+.channel-toggles {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+}
+
+.notification-item {
+  padding: 1rem 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.notification-item:last-child {
+  border-bottom: none;
+}
+
+.notification-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.notification-label {
+  font-weight: 500;
+  color: #374151;
+}
+
+.notification-toggles {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.toggle-switch {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  background: #d1d5db;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+  padding: 0;
+}
+
+.toggle-switch.on {
+  background: #3b82f6;
+}
+
+.toggle-switch.off {
+  background: #d1d5db;
+}
+
+.toggle-switch:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.toggle-slider {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  background: #ffffff;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+
+.toggle-switch.on .toggle-slider {
+  transform: translateX(20px);
+}
+
+.quiet-hours-times {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.quiet-hours-times .form-group {
+  margin-bottom: 0;
+}
+
+.quiet-hours-times label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.quiet-hours-times input[type="time"] {
+  padding: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.875rem;
+}
+
+@media (max-width: 768px) {
+  .channel-row,
+  .notification-item-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .channel-toggles,
+  .notification-toggles {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .quiet-hours-times {
+    flex-direction: column;
+  }
+}
