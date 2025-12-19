@@ -100,7 +100,6 @@ function EmployeeTickets() {
           comments:hrms_ticket_comments(count)
         `)
         .eq('tenant_id', tenant.tenant_id)
-        .order('created_at', { ascending: false })
 
       // Filter by business if selected
       if (selectedBusiness?.business_id) {
@@ -121,6 +120,9 @@ function EmployeeTickets() {
       if (!showClosed) {
         query = query.not('status', 'in', '(closed,auto_closed)')
       }
+
+      // Order at the end
+      query = query.order('created_at', { ascending: false })
 
       const { data, error: queryError } = await query
 

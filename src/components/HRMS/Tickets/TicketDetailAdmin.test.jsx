@@ -19,20 +19,103 @@ vi.mock('../../../contexts/AuthProvider', () => ({
 
 vi.mock('../../../contexts/TenantProvider', () => ({
   useTenant: () => ({
-    tenant: { id: 'test-tenant-id', company_name: 'Test Company' },
+    tenant: { tenant_id: 'test-tenant-id', company_name: 'Test Company' },
     loading: false,
-    selectedBusiness: { id: 'test-business-id', business_name: 'Test Business', short_name: 'TEST' },
+    selectedBusiness: { business_id: 'test-business-id', business_name: 'Test Business', short_name: 'TEST' },
   }),
   TenantProvider: ({ children }) => children,
 }))
+
+const mockTicketData = {
+  ticket_id: 'tkt-001',
+  ticket_number: 'TESTTKT0042',
+  subject: 'Request for H1B Extension Filing',
+  description: 'My H1B visa expires on March 15, 2026. I would like to initiate the extension process. My current project with ABC Corp is expected to continue through 2027.\n\nPlease let me know what documents are needed.',
+  department: 'Immigration',
+  request_type: 'H1B Extension',
+  status: 'sent_to_candidate_review',
+  priority: 'normal',
+  created_at: '2025-12-10T09:30:00Z',
+  updated_at: '2025-12-14T15:45:00Z',
+  assigned_team: 'Immigration_Team',
+  assigned_to: 'user-001',
+  employee: {
+    employee_id: 'emp-001',
+    first_name: 'John',
+    last_name: 'Doe',
+    email: 'john.doe@company.com',
+    phone: '(555) 123-4567',
+    employee_code: 'IES00015',
+    employee_type: 'it_usa',
+    business: {
+      business_id: 'biz-001',
+      business_name: 'Intuites LLC',
+    },
+  },
+  attachments: [
+    {
+      attachment_id: 'att-001',
+      file_name: 'I-797_copy.pdf',
+      file_size_bytes: 1259520,
+      file_path: '/attachments/att-001.pdf',
+      created_at: '2025-12-10T09:30:00Z',
+    },
+    {
+      attachment_id: 'att-002',
+      file_name: 'passport_scan.pdf',
+      file_size_bytes: 2519040,
+      file_path: '/attachments/att-002.pdf',
+      created_at: '2025-12-10T09:30:00Z',
+    },
+  ],
+  comments: [
+    {
+      comment_id: 'cmt-001',
+      comment_text: 'Hi John,\n\nWe\'ve reviewed your request. Please review the attached checklist and confirm you can provide all required documents within 2 weeks.\n\nKey documents needed:\n- Updated resume\n- Recent pay stubs (last 3 months)\n- Client letter confirming project extension',
+      is_internal_note: false,
+      author_type: 'team_member',
+      author_display_name: 'Immigration Team',
+      created_at: '2025-12-14T15:45:00Z',
+      email_sent: true,
+    },
+    {
+      comment_id: 'cmt-002',
+      comment_text: 'Verified employee\'s current project status with PM. Project is confirmed to continue until Q4 2027. Ready to proceed with extension filing.',
+      is_internal_note: true,
+      author_type: 'team_member',
+      author_display_name: 'HR Admin',
+      created_at: '2025-12-12T14:15:00Z',
+      email_sent: false,
+    },
+  ],
+  status_history: [
+    {
+      history_id: 'hist-001',
+      previous_status: 'in_team_review',
+      new_status: 'sent_to_candidate_review',
+      change_reason: 'Ready for employee review',
+      changed_by_name: 'Immigration Team',
+      created_at: '2025-12-14T15:45:00Z',
+    },
+    {
+      history_id: 'hist-002',
+      previous_status: 'ticket_created',
+      new_status: 'in_team_review',
+      change_reason: null,
+      changed_by_name: 'Immigration Team',
+      created_at: '2025-12-12T10:15:00Z',
+    },
+  ],
+}
 
 vi.mock('../../../api/supabaseClient', () => ({
   supabase: {
     from: vi.fn().mockReturnValue({
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
-      single: vi.fn().mockResolvedValue({ data: null, error: null }),
+      single: vi.fn().mockResolvedValue({ data: mockTicketData, error: null }),
       update: vi.fn().mockReturnThis(),
+      insert: vi.fn().mockResolvedValue({ data: { comment_id: 'cmt-new' }, error: null }),
     }),
   },
 }))
@@ -52,9 +135,13 @@ describe('TicketDetailAdmin', () => {
   })
 
   describe('Loading State', () => {
-    it('shows loading spinner while fetching ticket', () => {
+    it('shows loading spinner while fetching ticket', async () => {
       render(<TicketDetailAdmin />, { wrapper: TestWrapper })
       expect(screen.getByTestId('loading-spinner')).toBeInTheDocument()
+      // Wait for data to load
+      await waitFor(() => {
+        expect(screen.queryByTestId('loading-spinner')).not.toBeInTheDocument()
+      }, { timeout: 3000 })
     })
   })
 
