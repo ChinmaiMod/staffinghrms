@@ -822,24 +822,56 @@
 }
 
 /* Visa Tab */
-.tab-content-visa .info-card {
-  margin-bottom: 0;
+.tab-content-visa {
+  padding: 1.5rem;
 }
 
-.visa-status-badge {
+.visa-immigration-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.visa-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.visa-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.visa-section-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.btn-primary.btn-sm {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
   display: inline-flex;
   align-items: center;
-  gap: var(--space-3, 12px);
-  padding: var(--space-4, 16px);
-  background: #dbeafe;
-  border-radius: var(--radius-md, 6px);
-  margin-bottom: var(--space-5, 20px);
+  gap: 0.5rem;
+  background: #3B82F6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
 }
 
-.visa-type {
-  font-size: 24px;
-  font-weight: 700;
-  color: #1e40af;
+.btn-primary.btn-sm:hover {
+  background: #2563EB;
+}
+
+.icon-sm {
+  width: 1rem;
+  height: 1rem;
 }
 
 /* Performance Tab */

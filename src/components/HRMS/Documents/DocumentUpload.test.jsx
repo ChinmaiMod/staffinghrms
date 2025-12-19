@@ -14,7 +14,7 @@ vi.mock('../../../api/supabaseClient', () => {
     const builder = {
       select: vi.fn(() => builder),
       eq: vi.fn(() => builder),
-      order: vi.fn(() => Promise.resolve({ data: [], error: null })),
+      order: vi.fn(() => Promise.resolve({ data: [{ employee_id: 'emp-1', first_name: 'John', last_name: 'Doe', employee_code: 'IES00001' }], error: null })),
       insert: vi.fn(() => Promise.resolve({ error: null })),
     }
     return builder

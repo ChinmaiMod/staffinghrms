@@ -32,6 +32,12 @@ import {
   GlobeAmericasIcon
 } from '@heroicons/react/24/outline'
 import { CheckCircleIcon as CheckCircleSolid, StarIcon as StarSolid } from '@heroicons/react/24/solid'
+import {
+  VisaStatusOverview,
+  VisaHistoryTimeline,
+  VisaStatusForm,
+  DependentsManagement,
+} from '../VisaImmigration'
 import './EmployeeDetail.css'
 
 // Employee type configuration
@@ -394,10 +400,69 @@ function NoteItem({ note }) {
   )
 }
 
-/**
- * Employee Detail - Individual employee view with 7 tabs
- * Based on UI_DESIGN_DOCS/05_EMPLOYEE_MANAGEMENT.md Section 2
- */
+// Visa Immigration Tab Component
+function VisaImmigrationTab({ employeeId }) {
+  const [showVisaForm, setShowVisaForm] = useState(false)
+  const [editingVisaStatus, setEditingVisaStatus] = useState(null)
+
+  const handleAddVisa = () => {
+    setEditingVisaStatus(null)
+    setShowVisaForm(true)
+  }
+
+  const handleEditVisa = (visaStatus) => {
+    setEditingVisaStatus(visaStatus)
+    setShowVisaForm(true)
+  }
+
+  const handleVisaFormClose = () => {
+    setShowVisaForm(false)
+    setEditingVisaStatus(null)
+  }
+
+  const handleVisaFormSave = () => {
+    // Refresh will be handled by components
+    handleVisaFormClose()
+  }
+
+  return (
+    <div className="tab-content-visa">
+      <div className="visa-immigration-container">
+        <div className="visa-section">
+          <div className="visa-section-header">
+            <h3>Current Visa Status</h3>
+            <button className="btn-primary btn-sm" onClick={handleAddVisa}>
+              <PlusIcon className="icon-sm" />
+              Add Visa Status
+            </button>
+          </div>
+          <VisaStatusOverview employeeId={employeeId} />
+        </div>
+
+        <div className="visa-section">
+          <div className="visa-section-header">
+            <h3>Visa History</h3>
+          </div>
+          <VisaHistoryTimeline employeeId={employeeId} />
+        </div>
+
+        <div className="visa-section">
+          <DependentsManagement employeeId={employeeId} />
+        </div>
+      </div>
+
+      {showVisaForm && (
+        <VisaStatusForm
+          employeeId={employeeId}
+          visaStatusId={editingVisaStatus?.visa_status_id}
+          onClose={handleVisaFormClose}
+          onSave={handleVisaFormSave}
+        />
+      )}
+    </div>
+  )
+}
+
 function EmployeeDetail({ testMode = false } = {}) {
   const { employeeId } = useParams()
   const navigate = useNavigate()
@@ -733,25 +798,7 @@ function EmployeeDetail({ testMode = false } = {}) {
         )
       
       case 'visa':
-        return (
-          <div className="tab-content-visa">
-            <div className="info-card">
-              <h3>Current Visa Status</h3>
-              <div className="visa-status-badge">
-                <IdentificationIcon className="icon-lg" />
-                <span className="visa-type">{employee.visa.current_status}</span>
-              </div>
-              <div className="info-grid">
-                <InfoField label="Receipt Number" value={employee.visa.receipt_number} />
-                <InfoField label="Petition Number" value={employee.visa.petition_number} />
-                <InfoField label="Valid From" value={employee.visa.valid_from} />
-                <InfoField label="Valid Until" value={employee.visa.valid_until} />
-                <InfoField label="Sponsoring Employer" value={employee.visa.employer} />
-                <InfoField label="LCA Case Number" value={employee.visa.lca_case_number} />
-              </div>
-            </div>
-          </div>
-        )
+        return <VisaImmigrationTab employeeId={employeeId} />
       
       case 'performance':
         return (
