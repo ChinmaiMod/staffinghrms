@@ -9,12 +9,17 @@ import AssignUserRoles from '../../DataAdministration/UserRoles/AssignUserRoles'
 import InviteUsers from '../../DataAdministration/UserInvitations/InviteUsers'
 import RBACAdministration from '../../DataAdministration/RBAC/RBACAdministration'
 import AIPromptsPage from './AIPrompts/AIPromptsPage'
+import ChecklistTypesPage from './ChecklistTypes/ChecklistTypesPage'
+import ChecklistTemplatesPage from './ChecklistTemplates/ChecklistTemplatesPage'
+import EmailTemplatesPage from './EmailTemplates/EmailTemplatesPage'
 
 const REFERENCE_TABLES = [
   { id: 'rbac_admin', label: 'Access Control', icon: '🛡️', path: 'rbac-admin' },
   { id: 'assign_roles', label: 'Assign User Roles', icon: '👤', path: 'assign-roles' },
   { id: 'invite_users', label: 'Invite Users', icon: '📧', path: 'invite-users' },
   { id: 'resend_api_keys', label: 'Configure Resend API Keys', icon: '🔑', path: 'resend-api-keys' },
+  { id: 'checklist_types', label: 'Checklist Type Management', icon: '📋', path: 'checklist-types' },
+  { id: 'email_templates', label: 'Email Templates', icon: '📧', path: 'email-templates' },
   { id: 'ai_prompts', label: 'AI Prompts for Newsletter', icon: '🤖', path: 'ai-prompts' },
   { id: 'businesses', label: 'Businesses', icon: '🏢', path: 'businesses' },
   { id: 'internal_staff', label: 'Internal Staff', icon: '👥', path: 'internal-staff' },
@@ -50,6 +55,9 @@ export default function DataAdministration() {
       <Route path="assign-roles" element={<AssignUserRoles />} />
       <Route path="invite-users" element={<InviteUsers />} />
       <Route path="resend-api-keys" element={<ResendApiKeysPage />} />
+      <Route path="checklist-types" element={<ChecklistTypesPage />} />
+      <Route path="checklist-templates" element={<ChecklistTemplatesPage />} />
+      <Route path="email-templates" element={<EmailTemplatesPage />} />
       <Route path="ai-prompts" element={<AIPromptsPage />} />
       <Route path="businesses" element={<BusinessesPage />} />
       <Route path="internal-staff" element={<InternalStaffPage />} />
