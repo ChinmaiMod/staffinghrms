@@ -56,7 +56,7 @@ vi.mock('react-router-dom', async () => {
   }
 })
 
-const Wrapper = ({ children }) => <BrowserRouter>{children}</Wrapper>
+const Wrapper = ({ children }) => <BrowserRouter>{children}</BrowserRouter>
 
 describe('DocumentUpload', () => {
   beforeEach(() => {
