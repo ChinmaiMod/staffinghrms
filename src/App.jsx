@@ -7,6 +7,7 @@ import ComplianceDashboard from './components/HRMS/Compliance/ComplianceDashboar
 import DataAdministration from './components/HRMS/DataAdmin/DataAdministration'
 import EmployeeTickets from './components/HRMS/Tickets/EmployeeTickets'
 import TicketDetailAdmin from './components/HRMS/Tickets/TicketDetailAdmin'
+import { ClientList, ClientForm, ClientDetail } from './components/HRMS/Clients'
 import LoginPage from './components/Auth/LoginPage'
 import LoadingSpinner from './components/Shared/LoadingSpinner'
 
@@ -62,6 +63,11 @@ function App() {
         <Route path="compliance" element={<ComplianceDashboard />} />
         <Route path="tickets" element={<EmployeeTickets />} />
         <Route path="tickets/:ticketId" element={<TicketDetailAdmin />} />
+        <Route path="clients" element={<ClientList />} />
+        <Route path="clients/new" element={<ClientForm />} />
+        <Route path="clients/:clientId" element={<ClientDetail />} />
+        <Route path="clients/:clientId/edit" element={<ClientForm />} />
+        <Route path="documents/*" element={<DocumentManagement />} />
         <Route path="data-admin/*" element={<DataAdministration />} />
         {/* Additional routes will be added here */}
       </Route>
