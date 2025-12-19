@@ -14,6 +14,8 @@ import DocumentManagement from './components/HRMS/Documents/DocumentManagement'
 import TimesheetManagement from './components/HRMS/Timesheets/TimesheetManagement'
 import { NotificationsList } from './components/HRMS/Notifications'
 import NewsletterManagement from './components/HRMS/Newsletters/NewsletterManagement'
+import SuggestionManagement from './components/HRMS/Suggestions/SuggestionManagement'
+import SettingsManagement from './components/HRMS/Settings/SettingsManagement'
 import { IssueList, IssueReport, IssueDetail, IssueManagement } from './components/IssueReport'
 import LoginPage from './components/Auth/LoginPage'
 import LoadingSpinner from './components/Shared/LoadingSpinner'
@@ -78,6 +80,8 @@ function App() {
         <Route path="projects/*" element={<ProjectManagement />} />
         <Route path="documents/*" element={<DocumentManagement />} />
         <Route path="timesheets/*" element={<TimesheetManagement />} />
+        <Route path="newsletters/*" element={<NewsletterManagement />} />
+        <Route path="suggestions/*" element={<SuggestionManagement />} />
         <Route path="notifications" element={<NotificationsList />} />
         <Route path="data-admin/*" element={<DataAdministration />} />
         <Route path="settings" element={<SettingsManagement />} />

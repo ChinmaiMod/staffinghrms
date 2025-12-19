@@ -18,8 +18,8 @@ const IssueReport = () => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    severity: 'MEDIUM',
-    issue_type: 'BUG',
+    severity: 'medium',
+    issue_type: 'bug',
     steps_to_reproduce: '',
     expected_behavior: '',
     actual_behavior: '',
@@ -34,10 +34,10 @@ const IssueReport = () => {
   const [fieldErrors, setFieldErrors] = useState({});
 
   const severityOptions = [
-    { value: 'LOW', label: 'Low', description: 'Minor issue', color: 'low' },
-    { value: 'MEDIUM', label: 'Medium', description: 'Moderate issue', color: 'medium' },
-    { value: 'HIGH', label: 'High', description: 'Major issue', color: 'high' },
-    { value: 'CRITICAL', label: 'Critical', description: 'System down', color: 'critical' }
+    { value: 'low', label: 'Low', description: 'Minor issue', color: 'low' },
+    { value: 'medium', label: 'Medium', description: 'Moderate issue', color: 'medium' },
+    { value: 'high', label: 'High', description: 'Major issue', color: 'high' },
+    { value: 'critical', label: 'Critical', description: 'System down', color: 'critical' }
   ];
 
   const handleChange = (e) => {
@@ -134,6 +134,22 @@ const IssueReport = () => {
     return urlData.publicUrl;
   };
 
+  const getBrowserInfo = () => {
+    const ua = navigator.userAgent;
+    let browser = 'Unknown';
+    if (ua.indexOf('Chrome') > -1) browser = 'Chrome';
+    else if (ua.indexOf('Firefox') > -1) browser = 'Firefox';
+    else if (ua.indexOf('Safari') > -1) browser = 'Safari';
+    else if (ua.indexOf('Edge') > -1) browser = 'Edge';
+    
+    let os = 'Unknown';
+    if (ua.indexOf('Windows') > -1) os = 'Windows';
+    else if (ua.indexOf('Mac') > -1) os = 'macOS';
+    else if (ua.indexOf('Linux') > -1) os = 'Linux';
+    
+    return { browser, os, screen_resolution: `${window.screen.width} × ${window.screen.height}` };
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -214,8 +230,8 @@ const IssueReport = () => {
       setFormData({
         title: '',
         description: '',
-        severity: 'MEDIUM',
-        issue_type: 'BUG',
+        severity: 'medium',
+        issue_type: 'bug',
         steps_to_reproduce: '',
         expected_behavior: '',
         actual_behavior: '',
@@ -239,8 +255,8 @@ const IssueReport = () => {
     setFormData({
       title: '',
       description: '',
-      severity: 'MEDIUM',
-      issue_type: 'BUG',
+      severity: 'medium',
+      issue_type: 'bug',
       steps_to_reproduce: '',
       expected_behavior: '',
       actual_behavior: '',
@@ -315,12 +331,13 @@ const IssueReport = () => {
               onChange={handleChange}
               className={fieldErrors.issue_type ? 'error' : ''}
             >
-              <option value="BUG">Bug / Error</option>
-              <option value="UI_ISSUE">UI / Display Issue</option>
-              <option value="PERFORMANCE">Performance Problem</option>
-              <option value="DATA_ERROR">Data / Calculation Error</option>
-              <option value="FEATURE_NOT_WORKING">Feature Not Working</option>
-              <option value="OTHER">Other</option>
+              <option value="bug">Bug / Error</option>
+              <option value="error">Error</option>
+              <option value="ui_ux">UI / Display Issue</option>
+              <option value="performance">Performance Problem</option>
+              <option value="data_issue">Data / Calculation Error</option>
+              <option value="access_issue">Access Issue</option>
+              <option value="other">Other</option>
             </select>
             {fieldErrors.issue_type && (
               <small className="error-text">{fieldErrors.issue_type}</small>
