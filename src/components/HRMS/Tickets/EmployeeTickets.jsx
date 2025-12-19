@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import {
   TicketIcon,
   UserIcon,
@@ -6,6 +7,9 @@ import {
   ArrowTrendingUpIcon,
   FunnelIcon,
 } from '@heroicons/react/24/outline'
+import { supabase } from '../../../api/supabaseClient'
+import { useTenant } from '../../../contexts/TenantProvider'
+import { useAuth } from '../../../contexts/AuthProvider'
 import LoadingSpinner from '../../Shared/LoadingSpinner'
 import './EmployeeTickets.css'
 
@@ -15,6 +19,8 @@ import './EmployeeTickets.css'
  * Based on UI_DESIGN_DOCS/04_EMPLOYEE_TICKETS.md, section 4.1–4.2
  */
 function EmployeeTickets() {
+  const { tenant, selectedBusiness } = useTenant()
+  const { user } = useAuth()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [tickets, setTickets] = useState([])
@@ -30,104 +36,139 @@ function EmployeeTickets() {
   const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
-    fetchTickets()
-  }, [])
+    if (tenant?.tenant_id) {
+      fetchTickets()
+    }
+  }, [tenant?.tenant_id, selectedBusiness?.business_id, dateRangeFilter, assignedToMeOnly, showClosed])
 
   const fetchTickets = async () => {
     try {
       setLoading(true)
       setError(null)
 
-      // Mock data closely aligned with design examples
-      const mockTickets = [
-        {
-          id: 'tkt-0045',
-          ticketNumber: 'IESTKT0045',
-          subject: 'Payroll Discrepancy - Missing December Bonus',
-          department: 'HR',
-          requestType: 'Payroll Discrepancy',
-          employeeName: 'John Smith',
-          employeeCode: 'IES00012',
-          businessName: 'Intuites LLC',
-          createdAt: '2025-12-15T10:00:00Z',
-          status: 'ticket_created',
-          priority: 'high',
-          assignedTo: null,
-          commentsCount: 0,
-          hoursAgo: 2,
-        },
-        {
-          id: 'tkt-0044',
-          ticketNumber: 'IESTKT0044',
-          subject: 'Benefits Enrollment Question',
-          department: 'HR',
-          requestType: 'Benefits Inquiry',
-          employeeName: 'Mary Chen',
-          employeeCode: 'IES00034',
-          businessName: 'Intuites LLC',
-          createdAt: '2025-12-14T09:00:00Z',
-          status: 'in_team_review',
-          priority: 'normal',
-          assignedTo: 'HR Admin',
-          commentsCount: 3,
-          hoursAgo: 24,
-        },
-        {
-          id: 'tkt-0041',
-          ticketNumber: 'IESTKT0041',
-          subject: 'Request for Employment Verification Letter',
-          department: 'HR',
-          requestType: 'Employment Verification',
-          employeeName: 'Bob Wilson',
-          employeeCode: 'IES00056',
-          businessName: 'TechStaff Inc',
-          createdAt: '2025-12-12T11:00:00Z',
-          status: 'sent_to_candidate_review',
-          priority: 'normal',
-          assignedTo: 'HR Admin',
-          commentsCount: 5,
-          hoursAgo: 72,
-          awaitingEmployee: true,
-        },
-        {
-          id: 'tkt-0042',
-          ticketNumber: 'IESTKT0042',
-          subject: 'H1B Extension Filing Request',
-          department: 'Immigration',
-          requestType: 'H1B Extension',
-          employeeName: 'John Doe',
-          employeeCode: 'IES00015',
-          businessName: 'Intuites LLC',
-          createdAt: '2025-12-10T09:30:00Z',
-          status: 'sent_to_candidate_review',
-          priority: 'high',
-          assignedTo: 'Immigration Team',
-          commentsCount: 4,
-          visaExpiry: '2026-03-15',
-        },
-        {
-          id: 'tkt-0039',
-          ticketNumber: 'IESTKT0039',
-          subject: 'Green Card I-140 Status Update',
-          department: 'Immigration',
-          requestType: 'GC Processing',
-          employeeName: 'Sarah Johnson',
-          employeeCode: 'IES00023',
-          businessName: 'Intuites LLC',
-          createdAt: '2025-12-08T13:00:00Z',
-          status: 'need_attorney_discussion',
-          priority: 'high',
-          assignedTo: 'Immigration Team',
-          commentsCount: 7,
-          attorneyReview: true,
-        },
-      ]
-
-      setTimeout(() => {
-        setTickets(mockTickets)
+      if (!tenant?.tenant_id) {
+        setError('Tenant not available')
         setLoading(false)
-      }, 300)
+        return
+      }
+
+      // Build date range filter
+      const now = new Date()
+      let dateFrom = null
+      switch (dateRangeFilter) {
+        case 'today':
+          dateFrom = new Date(now.setHours(0, 0, 0, 0))
+          break
+        case 'last_7_days':
+          dateFrom = new Date(now.setDate(now.getDate() - 7))
+          break
+        case 'last_30_days':
+          dateFrom = new Date(now.setDate(now.getDate() - 30))
+          break
+        case 'last_90_days':
+          dateFrom = new Date(now.setDate(now.getDate() - 90))
+          break
+        default:
+          dateFrom = new Date(now.setDate(now.getDate() - 30))
+      }
+
+      // Build query
+      let query = supabase
+        .from('hrms_tickets')
+        .select(`
+          ticket_id,
+          ticket_number,
+          subject,
+          department,
+          request_type,
+          status,
+          priority,
+          created_at,
+          last_activity_at,
+          assigned_to,
+          assigned_team,
+          employee:hrms_employees!hrms_tickets_employee_id_fkey(
+            employee_id,
+            first_name,
+            last_name,
+            employee_code
+          ),
+          business:businesses!hrms_tickets_business_id_fkey(
+            business_id,
+            business_name
+          ),
+          comments:hrms_ticket_comments(count)
+        `)
+        .eq('tenant_id', tenant.tenant_id)
+        .order('created_at', { ascending: false })
+
+      // Filter by business if selected
+      if (selectedBusiness?.business_id) {
+        query = query.eq('business_id', selectedBusiness.business_id)
+      }
+
+      // Filter by date range
+      if (dateFrom) {
+        query = query.gte('created_at', dateFrom.toISOString())
+      }
+
+      // Filter by assigned to me
+      if (assignedToMeOnly && user?.id) {
+        query = query.eq('assigned_to', user.id)
+      }
+
+      // Filter out closed tickets unless showClosed is true
+      if (!showClosed) {
+        query = query.not('status', 'in', '(closed,auto_closed)')
+      }
+
+      const { data, error: queryError } = await query
+
+      if (queryError) throw queryError
+
+      // Transform data to match component format
+      const transformedTickets = (data || []).map((ticket) => {
+        const employee = ticket.employee || {}
+        const business = ticket.business || {}
+        const commentsCount = Array.isArray(ticket.comments) 
+          ? ticket.comments.length 
+          : (ticket.comments?.[0]?.count || 0)
+
+        // Calculate hours ago
+        const createdAt = new Date(ticket.created_at)
+        const now = new Date()
+        const hoursAgo = Math.floor((now - createdAt) / (1000 * 60 * 60))
+
+        // Get assigned to name (simplified - would need to join with profiles)
+        let assignedToName = null
+        if (ticket.assigned_to) {
+          // For now, use team name. In production, join with profiles table
+          assignedToName = ticket.assigned_team === 'HR_Team' ? 'HR Admin' : 'Immigration Team'
+        }
+
+        return {
+          id: ticket.ticket_id,
+          ticketNumber: ticket.ticket_number,
+          subject: ticket.subject,
+          department: ticket.department,
+          requestType: ticket.request_type,
+          employeeName: `${employee.first_name || ''} ${employee.last_name || ''}`.trim() || 'Unknown',
+          employeeCode: employee.employee_code || '',
+          businessName: business.business_name || 'Unknown',
+          createdAt: ticket.created_at,
+          status: ticket.status,
+          priority: ticket.priority || 'normal',
+          assignedTo: assignedToName,
+          assignedToId: ticket.assigned_to, // Store ID for filtering
+          commentsCount,
+          hoursAgo,
+        }
+      })
+
+      setTickets(transformedTickets)
+      setLoading(false)
     } catch (err) {
+      console.error('Error fetching tickets:', err)
       setError(err.message || 'Failed to load tickets')
       setLoading(false)
     }
@@ -161,7 +202,7 @@ function EmployeeTickets() {
         return false
       }
 
-      if (assignedToMeOnly && ticket.assignedTo !== 'HR Admin') {
+      if (assignedToMeOnly && ticket.assignedToId !== user?.id) {
         return false
       }
 
@@ -180,8 +221,31 @@ function EmployeeTickets() {
     })
   }, [tickets, activeTab, statusFilter, requestTypeFilter, assignedToMeOnly, showClosed, searchQuery, dateRangeFilter])
 
-  const hrCount = tickets.filter((t) => t.department === 'HR').length
-  const immigrationCount = tickets.filter((t) => t.department === 'Immigration').length
+  // Calculate stats from actual tickets
+  const hrTickets = tickets.filter((t) => t.department === 'HR')
+  const immigrationTickets = tickets.filter((t) => t.department === 'Immigration')
+  const hrCount = hrTickets.length
+  const immigrationCount = immigrationTickets.length
+
+  // Calculate quick stats
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const newToday = tickets.filter((t) => {
+    const created = new Date(t.created_at)
+    created.setHours(0, 0, 0, 0)
+    return created.getTime() === today.getTime()
+  }).length
+
+  const inReview = tickets.filter((t) => 
+    ['in_team_review', 'need_leadership_discussion', 'need_attorney_discussion', 'need_team_discussion'].includes(t.status)
+  ).length
+
+  const pendingResponse = tickets.filter((t) => 
+    t.status === 'sent_to_candidate_review'
+  ).length
+
+  // Calculate average resolve time (simplified - would need resolved_at)
+  const avgResolve = '2.3d' // TODO: Calculate from resolved_at when available
 
   if (loading) {
     return <LoadingSpinner message="Loading tickets..." />
@@ -219,28 +283,28 @@ function EmployeeTickets() {
       <div className="tickets-quick-stats">
         <div className="stat-card">
           <div className="stat-label">New Today</div>
-          <div className="stat-value">5</div>
+          <div className="stat-value">{newToday}</div>
           <div className="stat-icon blue">
             <TicketIcon />
           </div>
         </div>
         <div className="stat-card">
           <div className="stat-label">In Review</div>
-          <div className="stat-value">12</div>
+          <div className="stat-value">{inReview}</div>
           <div className="stat-icon purple">
             <UserIcon />
           </div>
         </div>
         <div className="stat-card">
           <div className="stat-label">Pending Response</div>
-          <div className="stat-value">4</div>
+          <div className="stat-value">{pendingResponse}</div>
           <div className="stat-icon green">
             <ClockIcon />
           </div>
         </div>
         <div className="stat-card">
           <div className="stat-label">Avg Resolve</div>
-          <div className="stat-value">2.3d</div>
+          <div className="stat-value">{avgResolve}</div>
           <div className="stat-icon gray">
             <ArrowTrendingUpIcon />
           </div>
@@ -399,9 +463,9 @@ function EmployeeTickets() {
                       Assign to Me
                     </button>
                   )}
-                  <button type="button" className="btn-primary-outline">
+                  <Link to={`/hrms/tickets/${ticket.id}`} className="btn-primary-outline">
                     View Ticket →
-                  </button>
+                  </Link>
                 </div>
               </div>
             </div>
