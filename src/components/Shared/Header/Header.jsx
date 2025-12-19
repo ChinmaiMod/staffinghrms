@@ -3,7 +3,6 @@ import { useLocation, Link } from 'react-router-dom'
 import {
   Bars3Icon,
   MagnifyingGlassIcon,
-  BellIcon,
   ChevronDownIcon,
   UserCircleIcon,
   Cog6ToothIcon,
@@ -12,6 +11,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { useTenant } from '../../../contexts/TenantProvider'
 import { useAuth } from '../../../contexts/AuthProvider'
+import { NotificationBell } from '../../HRMS/Notifications'
 import './Header.css'
 
 /**
@@ -206,14 +206,7 @@ function Header({ onMenuClick, sidebarCollapsed }) {
         )}
 
         {/* Notifications */}
-        <button
-          className="header-icon-btn"
-          aria-label="Notifications"
-          data-testid="notifications-btn"
-        >
-          <BellIcon className="header-icon" />
-          <span className="notification-badge">3</span>
-        </button>
+        <NotificationBell />
 
         {/* User Menu */}
         <div className="user-menu" ref={userMenuRef}>

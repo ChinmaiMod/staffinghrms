@@ -1,0 +1,244 @@
+/* NotificationsList Page Styles */
+
+.notifications-page {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.notifications-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.notifications-title {
+  margin: 0 0 4px 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.notifications-subtitle {
+  margin: 0;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.notifications-preferences-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  color: #374151;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 150ms ease, border-color 150ms ease;
+}
+
+.notifications-preferences-btn:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.preferences-icon {
+  width: 18px;
+  height: 18px;
+}
+
+/* Filter Tabs */
+.notifications-filters {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.notification-filter-tab {
+  position: relative;
+  padding: 8px 16px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.notification-filter-tab:hover {
+  background: #f3f4f6;
+}
+
+.notification-filter-tab.active {
+  background: #3b82f6;
+  color: #ffffff;
+}
+
+.filter-badge {
+  margin-left: 6px;
+  padding: 2px 6px;
+  background: #fef3c7;
+  color: #92400e;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 10px;
+}
+
+.notification-filter-tab.active .filter-badge {
+  background: rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+}
+
+/* Actions Bar */
+.notifications-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 16px;
+}
+
+.notifications-mark-all-btn {
+  padding: 8px 16px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  color: #374151;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+
+.notifications-mark-all-btn:hover {
+  background: #f9fafb;
+}
+
+/* Content */
+.notifications-content {
+  min-height: 400px;
+}
+
+.notifications-group {
+  margin-bottom: 32px;
+}
+
+.notifications-group-header {
+  margin: 0 0 12px 0;
+  padding-bottom: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: #6b7280;
+  text-transform: uppercase;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.notifications-group-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.notification-item-wrapper {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.notification-dismiss-btn {
+  flex-shrink: 0;
+  padding: 8px 12px;
+  background: transparent;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 150ms ease, border-color 150ms ease;
+}
+
+.notification-dismiss-btn:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+/* Empty State */
+.notifications-empty {
+  padding: 80px 24px;
+  text-align: center;
+}
+
+.notifications-empty-icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.notifications-empty h2 {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.notifications-empty p {
+  margin: 0;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+/* Error State */
+.notifications-error {
+  padding: 40px 24px;
+  text-align: center;
+  color: #dc2626;
+}
+
+.notifications-retry-btn {
+  margin-top: 16px;
+  padding: 8px 16px;
+  background: #3b82f6;
+  border: none;
+  border-radius: 6px;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.notifications-retry-btn:hover {
+  background: #2563eb;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 640px) {
+  .notifications-page {
+    padding: 16px;
+  }
+
+  .notifications-header {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .notifications-filters {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .notification-item-wrapper {
+    flex-direction: column;
+  }
+
+  .notification-dismiss-btn {
+    align-self: flex-end;
+  }
+}

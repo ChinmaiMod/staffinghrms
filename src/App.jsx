@@ -12,6 +12,9 @@ import VendorManagement from './components/HRMS/Vendors/VendorManagement'
 import ProjectManagement from './components/HRMS/Projects/ProjectManagement'
 import DocumentManagement from './components/HRMS/Documents/DocumentManagement'
 import TimesheetManagement from './components/HRMS/Timesheets/TimesheetManagement'
+import { NotificationsList } from './components/HRMS/Notifications'
+import NewsletterManagement from './components/HRMS/Newsletters/NewsletterManagement'
+import { IssueList, IssueReport, IssueDetail, IssueManagement } from './components/IssueReport'
 import LoginPage from './components/Auth/LoginPage'
 import LoadingSpinner from './components/Shared/LoadingSpinner'
 
@@ -75,7 +78,14 @@ function App() {
         <Route path="projects/*" element={<ProjectManagement />} />
         <Route path="documents/*" element={<DocumentManagement />} />
         <Route path="timesheets/*" element={<TimesheetManagement />} />
+        <Route path="notifications" element={<NotificationsList />} />
         <Route path="data-admin/*" element={<DataAdministration />} />
+        <Route path="settings" element={<SettingsManagement />} />
+        <Route path="profile" element={<SettingsManagement />} />
+        <Route path="issues" element={<IssueList />} />
+        <Route path="issues/new" element={<IssueReport />} />
+        <Route path="issues/:issueId" element={<IssueDetail />} />
+        <Route path="issues/admin" element={<IssueManagement />} />
         {/* Additional routes will be added here */}
       </Route>
       
