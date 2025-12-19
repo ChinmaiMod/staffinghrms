@@ -85,11 +85,11 @@ function DocumentViewer() {
         const [bucket, ...pathParts] = data.file_path.split('/')
         const filePath = pathParts.join('/')
 
-        const { data: urlData } = supabase.storage
+        const { data: urlData, error: urlError } = await supabase.storage
           .from(bucket)
           .createSignedUrl(filePath, 3600)
 
-        if (urlData) {
+        if (!urlError && urlData) {
           setPreviewUrl(urlData.signedUrl)
         }
       }

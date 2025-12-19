@@ -183,7 +183,7 @@ function DocumentUpload() {
       // Create storage path
       const timestamp = Date.now()
       const sanitizedName = fileObj.name.replace(/[^a-zA-Z0-9.-]/g, '_')
-      const storagePath = `documents/${selectedEntityType}/${selectedEntityId || 'temp'}/${timestamp}_${sanitizedName}`
+      const storagePath = `${selectedEntityType}/${selectedEntityId || 'temp'}/${timestamp}_${sanitizedName}`
 
       // Upload to Supabase Storage (assuming bucket name is 'documents')
       const { data: uploadData, error: uploadError } = await supabase.storage
