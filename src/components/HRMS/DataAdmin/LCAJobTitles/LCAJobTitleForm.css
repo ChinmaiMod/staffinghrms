@@ -1,0 +1,64 @@
+.lca-job-title-form {
+  max-width: 800px;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.hrms-only-badge {
+  font-size: 11px;
+  color: #64748b;
+  background: #f1f5f9;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.wage-level-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.radio-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.radio-option:hover {
+  background: #f8fafc;
+  border-color: #3b82f6;
+}
+
+.radio-option input[type="radio"] {
+  margin-top: 2px;
+  cursor: pointer;
+}
+
+.radio-option input[type="radio"]:checked + div {
+  color: #1e293b;
+}
+
+.radio-option div {
+  flex: 1;
+}
+
+.radio-option strong {
+  display: block;
+  color: #1e293b;
+  margin-bottom: 2px;
+}
+
+.radio-option small {
+  display: block;
+  color: #64748b;
+  font-size: 11px;
+}

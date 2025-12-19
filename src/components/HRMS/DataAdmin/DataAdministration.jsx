@@ -12,6 +12,7 @@ import AIPromptsPage from './AIPrompts/AIPromptsPage'
 import ChecklistTypesPage from './ChecklistTypes/ChecklistTypesPage'
 import ChecklistTemplatesPage from './ChecklistTemplates/ChecklistTemplatesPage'
 import EmailTemplatesPage from './EmailTemplates/EmailTemplatesPage'
+import LCAJobTitlesPage from './LCAJobTitles/LCAJobTitlesPage'
 
 const REFERENCE_TABLES = [
   { id: 'rbac_admin', label: 'Access Control', icon: '🛡️', path: 'rbac-admin' },
@@ -27,6 +28,7 @@ const REFERENCE_TABLES = [
   { id: 'visa_status', label: 'Visa Statuses', icon: '🛂' },
   { id: 'job_titles_it', label: 'IT Job Titles', icon: '💼' },
   { id: 'job_titles_healthcare', label: 'Healthcare Job Titles', icon: '🏥' },
+  { id: 'lca_job_titles', label: 'LCA Job Titles', icon: '📋', path: 'lca-job-titles' },
   { id: 'reasons_for_contact', label: 'Reasons for Contact', icon: '📋' },
   { id: 'statuses', label: 'Contact Statuses', icon: '📊' },
   { id: 'role_types', label: 'Role Types', icon: '🎯' },
@@ -58,6 +60,7 @@ export default function DataAdministration() {
       <Route path="checklist-types" element={<ChecklistTypesPage />} />
       <Route path="checklist-templates" element={<ChecklistTemplatesPage />} />
       <Route path="email-templates" element={<EmailTemplatesPage />} />
+      <Route path="lca-job-titles" element={<LCAJobTitlesPage />} />
       <Route path="ai-prompts" element={<AIPromptsPage />} />
       <Route path="businesses" element={<BusinessesPage />} />
       <Route path="internal-staff" element={<InternalStaffPage />} />
