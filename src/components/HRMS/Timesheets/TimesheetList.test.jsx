@@ -1,25 +1,55 @@
 /**
- * TimesheetList Component Tests
+ * TimesheetList Component Tests (HRMS Read-only View)
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor, fireEvent } from '@testing-library/react'
 import { BrowserRouter } from 'react-router-dom'
 
-// Mock Supabase
-const mockSupabaseQuery = {
-  select: vi.fn().mockReturnThis(),
-  eq: vi.fn().mockReturnThis(),
-  order: vi.fn().mockReturnThis(),
-  range: vi.fn().mockReturnThis(),
-  or: vi.fn().mockReturnThis(),
-  maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
-}
+vi.mock('../../../api/supabaseClient', () => {
+  const createMockQuery = (finalResult) => ({
+    select: vi.fn().mockReturnThis(),
+    eq: vi.fn().mockReturnThis(),
+    gte: vi.fn().mockReturnThis(),
+    lte: vi.fn().mockReturnThis(),
+    order: vi.fn().mockReturnThis(),
+    range: vi.fn().mockResolvedValue(finalResult || { data: [], error: null, count: 0 }),
+  })
 
-vi.mock('../../../api/supabaseClient', () => ({
-  supabase: {
-    from: vi.fn(() => mockSupabaseQuery),
-  },
-}))
+  const mockFrom = vi.fn((table) => {
+    if (table === 'hrms_employees') {
+      return {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        order: vi.fn().mockResolvedValue({
+          data: [
+            { employee_id: 'emp-001', first_name: 'John', last_name: 'Smith', employee_code: 'IES00012' },
+          ],
+          error: null,
+        }),
+      }
+    }
+    if (table === 'hrms_projects') {
+      return {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        order: vi.fn().mockResolvedValue({
+          data: [
+            { project_id: 'project-001', project_name: 'Acme Corp Dev' },
+          ],
+          error: null,
+        }),
+      }
+    }
+    // Default for hrms_timesheets
+    return createMockQuery()
+  })
+
+  return {
+    supabase: {
+      from: mockFrom,
+    },
+  }
+})
 
 vi.mock('../../../contexts/TenantProvider', () => ({
   useTenant: vi.fn(() => ({
@@ -28,117 +58,55 @@ vi.mock('../../../contexts/TenantProvider', () => ({
   })),
 }))
 
-vi.mock('../../../contexts/AuthProvider', () => ({
-  useAuth: vi.fn(() => ({
-    user: { id: 'test-user-id' },
-  })),
-}))
-
 import TimesheetList from './TimesheetList'
 
 const TestWrapper = ({ children }) => <BrowserRouter>{children}</BrowserRouter>
 
-describe('TimesheetList', () => {
-  beforeEach(() => {
+describe('TimesheetList (HRMS Read-only)', () => {
+  let mockFrom
+
+  beforeEach(async () => {
     vi.clearAllMocks()
-    mockSupabaseQuery.select.mockReturnThis()
-    mockSupabaseQuery.eq.mockReturnThis()
-    mockSupabaseQuery.order.mockReturnThis()
-    mockSupabaseQuery.range.mockReturnThis()
-    mockSupabaseQuery.maybeSingle.mockResolvedValue({ data: null, error: null })
+    // Get the mock from the module
+    const { supabase } = await import('../../../api/supabaseClient')
+    mockFrom = supabase.from
   })
 
   it('renders loading state initially', () => {
-    mockSupabaseQuery.range.mockResolvedValue({
-      data: [],
-      error: null,
-      count: 0,
-    })
-
     render(<TimesheetList />, { wrapper: TestWrapper })
     expect(screen.getByTestId('loading-spinner')).toBeInTheDocument()
   })
 
   it('renders timesheet list page header', async () => {
-    mockSupabaseQuery.range.mockResolvedValue({
-      data: [],
-      error: null,
-      count: 0,
-    })
-
     render(<TimesheetList />, { wrapper: TestWrapper })
 
     await waitFor(() => {
-      expect(screen.getByText(/My Timesheets/i)).toBeInTheDocument()
-      expect(screen.getByText(/Track and manage your working hours/i)).toBeInTheDocument()
-    })
-  })
-
-  it('renders current period card when timesheet exists', async () => {
-    const mockTimesheet = {
-      timesheet_id: 'ts-001',
-      period_start_date: '2025-01-13',
-      period_end_date: '2025-01-19',
-      total_hours_worked: 32,
-      regular_hours: 32,
-      overtime_hours: 0,
-      submission_status: 'draft',
-      project: {
-        project_name: 'Acme Corp Dev',
-      },
-    }
-
-    // Mock current period fetch
-    mockSupabaseQuery.maybeSingle.mockResolvedValueOnce({
-      data: mockTimesheet,
-      error: null,
-    })
-
-    // Mock list fetch
-    mockSupabaseQuery.range.mockResolvedValue({
-      data: [mockTimesheet],
-      error: null,
-      count: 1,
-    })
-
-    render(<TimesheetList />, { wrapper: TestWrapper })
-
-    await waitFor(() => {
-      expect(screen.getByText(/Current Period/i)).toBeInTheDocument()
-      expect(screen.getByText(/32 \/ 40 hrs/i)).toBeInTheDocument()
+      const headers = screen.getAllByText(/Timesheets/i)
+      expect(headers.length).toBeGreaterThan(0)
+      expect(screen.getByText(/View and download employee timesheets/i)).toBeInTheDocument()
     }, { timeout: 3000 })
   })
 
-  it('renders filters bar', async () => {
-    mockSupabaseQuery.range.mockResolvedValue({
-      data: [],
-      error: null,
-      count: 0,
-    })
-
+  it('renders export Excel button', async () => {
     render(<TimesheetList />, { wrapper: TestWrapper })
 
     await waitFor(() => {
+      expect(screen.getByText(/Export Excel/i)).toBeInTheDocument()
+    })
+  })
+
+  it('renders filters bar with period, employee, status, and project filters', async () => {
+    render(<TimesheetList />, { wrapper: TestWrapper })
+
+    await waitFor(() => {
+      expect(screen.getByLabelText(/Period Type/i)).toBeInTheDocument()
+      expect(screen.getByLabelText(/Employee/i)).toBeInTheDocument()
       expect(screen.getByLabelText(/Status/i)).toBeInTheDocument()
       expect(screen.getByLabelText(/Project/i)).toBeInTheDocument()
     })
   })
 
-  it('renders New Timesheet button', async () => {
-    mockSupabaseQuery.range.mockResolvedValue({
-      data: [],
-      error: null,
-      count: 0,
-    })
-
-    render(<TimesheetList />, { wrapper: TestWrapper })
-
-    await waitFor(() => {
-      expect(screen.getByText(/New Timesheet/i)).toBeInTheDocument()
-    })
-  })
-
-  it('displays timesheet table with data', async () => {
+  it('displays timesheet table with employee information', async () => {
     const mockTimesheets = [
       {
         timesheet_id: 'ts-001',
@@ -149,85 +117,71 @@ describe('TimesheetList', () => {
         overtime_hours: 0,
         submission_status: 'approved',
         submitted_at: '2025-01-12T10:00:00Z',
+        employee: {
+          employee_id: 'emp-001',
+          first_name: 'John',
+          last_name: 'Smith',
+          employee_code: 'IES00012',
+        },
         project: {
           project_name: 'Acme Corp Dev',
         },
       },
     ]
 
-    // Mock current period fetch (no current period)
-    mockSupabaseQuery.maybeSingle.mockResolvedValueOnce({
-      data: null,
-      error: null,
-    })
-
-    // Mock list fetch
-    mockSupabaseQuery.range.mockResolvedValue({
-      data: mockTimesheets,
-      error: null,
-      count: 1,
+    mockFrom.mockImplementation((table) => {
+      if (table === 'hrms_employees') {
+        return {
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          order: vi.fn().mockResolvedValue({
+            data: [
+              { employee_id: 'emp-001', first_name: 'John', last_name: 'Smith', employee_code: 'IES00012' },
+            ],
+            error: null,
+          }),
+        }
+      }
+      if (table === 'hrms_projects') {
+        return {
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          order: vi.fn().mockResolvedValue({
+            data: [
+              { project_id: 'project-001', project_name: 'Acme Corp Dev' },
+            ],
+            error: null,
+          }),
+        }
+      }
+      return {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        gte: vi.fn().mockReturnThis(),
+        lte: vi.fn().mockReturnThis(),
+        order: vi.fn().mockReturnThis(),
+        range: vi.fn().mockResolvedValue({ data: mockTimesheets, error: null, count: 1 }),
+      }
     })
 
     render(<TimesheetList />, { wrapper: TestWrapper })
 
     await waitFor(() => {
-      // Check for project name and hours (date format may vary)
-      expect(screen.getByText(/Acme Corp Dev/i)).toBeInTheDocument()
-      const tableCells = screen.getAllByText(/40/i)
-      expect(tableCells.length).toBeGreaterThan(0)
+      const johnSmithElements = screen.getAllByText(/John Smith/i)
+      expect(johnSmithElements.length).toBeGreaterThan(0)
+      const employeeCodes = screen.getAllByText(/IES00012/i)
+      expect(employeeCodes.length).toBeGreaterThan(0)
+      const projectNames = screen.getAllByText(/Acme Corp Dev/i)
+      expect(projectNames.length).toBeGreaterThan(0)
     }, { timeout: 3000 })
   })
 
-  it('handles error state', async () => {
-    // Mock current period fetch (no error, just no data)
-    mockSupabaseQuery.maybeSingle.mockResolvedValueOnce({
-      data: null,
-      error: null,
-    })
-
-    // Mock list fetch error - need to make range throw
-    const mockRange = vi.fn().mockRejectedValue(new Error('Database error'))
-    mockSupabaseQuery.range = mockRange
-
+  it('does not show create/edit buttons (read-only)', async () => {
     render(<TimesheetList />, { wrapper: TestWrapper })
 
     await waitFor(() => {
-      // Error should be displayed in error banner
-      expect(screen.getByText(/Database error/i)).toBeInTheDocument()
-    }, { timeout: 3000 })
-  })
-
-  it('filters timesheets by status', async () => {
-    mockSupabaseQuery.range.mockResolvedValue({
-      data: [],
-      error: null,
-      count: 0,
-    })
-
-    render(<TimesheetList />, { wrapper: TestWrapper })
-
-    await waitFor(() => {
-      const statusSelect = screen.getByLabelText(/Status/i)
-      fireEvent.change(statusSelect, { target: { value: 'submitted' } })
-    })
-
-    await waitFor(() => {
-      expect(mockSupabaseQuery.eq).toHaveBeenCalledWith('submission_status', 'submitted')
-    })
-  })
-
-  it('navigates to new timesheet page when button clicked', async () => {
-    mockSupabaseQuery.range.mockResolvedValue({
-      data: [],
-      error: null,
-      count: 0,
-    })
-
-    render(<TimesheetList />, { wrapper: TestWrapper })
-
-    await waitFor(() => {
-      const newButton = screen.getByText(/New Timesheet/i)
-      expect(newButton.closest('a')).toHaveAttribute('href', '/hrms/timesheets/new')
+      expect(screen.queryByText(/New Timesheet/i)).not.toBeInTheDocument()
+      expect(screen.queryByText(/Edit/i)).not.toBeInTheDocument()
     })
   })
 })

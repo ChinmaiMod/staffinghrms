@@ -1,142 +1,146 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import {
   ClockIcon,
-  PlusIcon,
   MagnifyingGlassIcon,
   EyeIcon,
-  PencilIcon,
-  CalendarIcon,
-  ListBulletIcon,
+  ArrowDownTrayIcon,
+  DocumentArrowDownIcon,
 } from '@heroicons/react/24/outline'
 import { supabase } from '../../../api/supabaseClient'
 import { useTenant } from '../../../contexts/TenantProvider'
-import { useAuth } from '../../../contexts/AuthProvider'
 import LoadingSpinner from '../../Shared/LoadingSpinner'
 import './TimesheetList.css'
 
 // Timesheet status configuration with colors
 const TIMESHEET_STATUSES = {
-  draft: { label: 'Draft', bg: '#F3F4F6', text: '#374151', icon: 'pencil' },
-  submitted: { label: 'Submitted', bg: '#DBEAFE', text: '#1E40AF', icon: 'clock' },
-  approved: { label: 'Approved', bg: '#D1FAE5', text: '#065F46', icon: 'check-circle' },
-  rejected: { label: 'Rejected', bg: '#FEE2E2', text: '#991B1B', icon: 'x-circle' },
+  draft: { label: 'Draft', bg: '#F3F4F6', text: '#374151' },
+  submitted: { label: 'Submitted', bg: '#DBEAFE', text: '#1E40AF' },
+  approved: { label: 'Approved', bg: '#D1FAE5', text: '#065F46' },
+  rejected: { label: 'Rejected', bg: '#FEE2E2', text: '#991B1B' },
+}
+
+// Period types
+const PERIOD_TYPES = {
+  week: 'Week',
+  month: 'Month',
+  quarter: 'Quarter',
+  year: 'Year',
+  custom: 'Custom Range',
 }
 
 /**
- * TimesheetList - My Timesheets list page
+ * TimesheetList - HRMS Timesheets view (Read-only with download)
  * URL: /hrms/timesheets
- * Based on UI_DESIGN_DOCS/11_TIMESHEET_MANAGEMENT.md
+ * HRMS can only view and download timesheets - submission/approval happens in employee-portal
  */
 function TimesheetList({ testMode = false }) {
   const { tenant, selectedBusiness } = useTenant()
-  const { user } = useAuth()
-  const navigate = useNavigate()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [timesheets, setTimesheets] = useState([])
-  const [currentPeriodTimesheet, setCurrentPeriodTimesheet] = useState(null)
+  const [employees, setEmployees] = useState([])
 
   // Filters
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
+  const [employeeFilter, setEmployeeFilter] = useState('all')
   const [projectFilter, setProjectFilter] = useState('all')
   const [projects, setProjects] = useState([])
-
-  // View mode: 'list' or 'calendar'
-  const [viewMode, setViewMode] = useState('list')
+  const [periodType, setPeriodType] = useState('month')
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1)
   const [rowsPerPage] = useState(25)
   const [totalCount, setTotalCount] = useState(0)
 
-  // Calculate current period (this week)
-  const getCurrentPeriod = () => {
+  // Initialize date range based on period type
+  useEffect(() => {
     const today = new Date()
-    const dayOfWeek = today.getDay()
-    const diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1) // Monday
-    const monday = new Date(today.setDate(diff))
-    const sunday = new Date(monday)
-    sunday.setDate(monday.getDate() + 6)
-    
-    return {
-      start: monday.toISOString().split('T')[0],
-      end: sunday.toISOString().split('T')[0],
+    let start, end
+
+    switch (periodType) {
+      case 'week':
+        const dayOfWeek = today.getDay()
+        const diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1)
+        start = new Date(today.setDate(diff))
+        end = new Date(start)
+        end.setDate(start.getDate() + 6)
+        break
+      case 'month':
+        start = new Date(today.getFullYear(), today.getMonth(), 1)
+        end = new Date(today.getFullYear(), today.getMonth() + 1, 0)
+        break
+      case 'quarter':
+        const quarter = Math.floor(today.getMonth() / 3)
+        start = new Date(today.getFullYear(), quarter * 3, 1)
+        end = new Date(today.getFullYear(), (quarter + 1) * 3, 0)
+        break
+      case 'year':
+        start = new Date(today.getFullYear(), 0, 1)
+        end = new Date(today.getFullYear(), 11, 31)
+        break
+      default:
+        // Custom - use last 30 days as default
+        end = new Date()
+        start = new Date()
+        start.setDate(end.getDate() - 30)
     }
-  }
+
+    if (!startDate || periodType !== 'custom') {
+      setStartDate(start.toISOString().split('T')[0])
+    }
+    if (!endDate || periodType !== 'custom') {
+      setEndDate(end.toISOString().split('T')[0])
+    }
+  }, [periodType])
 
   useEffect(() => {
     if (testMode) {
       // Mock data for testing
-      const mockTimesheet = {
-        timesheet_id: 'ts-001',
-        period_start_date: '2025-01-13',
-        period_end_date: '2025-01-19',
-        total_hours_worked: 32,
-        regular_hours: 32,
-        overtime_hours: 0,
-        submission_status: 'draft',
-        project: {
-          project_id: 'project-001',
-          project_name: 'Acme Corp Dev',
+      setTimesheets([
+        {
+          timesheet_id: 'ts-001',
+          period_start_date: '2025-01-13',
+          period_end_date: '2025-01-19',
+          total_hours_worked: 32,
+          regular_hours: 32,
+          overtime_hours: 0,
+          submission_status: 'approved',
+          submitted_at: '2025-01-17T10:00:00Z',
+          employee: {
+            employee_id: 'emp-001',
+            first_name: 'John',
+            last_name: 'Smith',
+            employee_code: 'IES00012',
+          },
+          project: {
+            project_id: 'project-001',
+            project_name: 'Acme Corp Dev',
+          },
         },
-      }
-      setTimesheets([mockTimesheet])
-      setCurrentPeriodTimesheet(mockTimesheet)
+      ])
       setTotalCount(1)
       setLoading(false)
       return
     }
 
-    if (tenant?.tenant_id && user?.id) {
+    if (tenant?.tenant_id) {
       fetchTimesheets()
+      fetchEmployees()
       fetchProjects()
-      fetchCurrentPeriodTimesheet()
     }
-  }, [tenant?.tenant_id, selectedBusiness?.business_id, user?.id, statusFilter, projectFilter, currentPage, testMode])
-
-  const fetchCurrentPeriodTimesheet = async () => {
-    try {
-      if (!tenant?.tenant_id || !user?.id) return
-
-      const currentPeriod = getCurrentPeriod()
-
-      const { data, error: queryError } = await supabase
-        .from('hrms_timesheets')
-        .select(`
-          timesheet_id,
-          period_start_date,
-          period_end_date,
-          total_hours_worked,
-          regular_hours,
-          overtime_hours,
-          submission_status,
-          project:hrms_projects!hrms_timesheets_project_id_fkey(
-            project_id,
-            project_name
-          )
-        `)
-        .eq('tenant_id', tenant.tenant_id)
-        .eq('employee_id', user.id) // TODO: Get actual employee_id from user
-        .eq('period_start_date', currentPeriod.start)
-        .eq('period_end_date', currentPeriod.end)
-        .maybeSingle()
-
-      if (queryError) throw queryError
-      setCurrentPeriodTimesheet(data)
-    } catch (err) {
-      console.error('Error fetching current period timesheet:', err)
-    }
-  }
+  }, [tenant?.tenant_id, selectedBusiness?.business_id, statusFilter, employeeFilter, projectFilter, startDate, endDate, currentPage, testMode])
 
   const fetchTimesheets = async () => {
     try {
       setLoading(true)
       setError(null)
 
-      if (!tenant?.tenant_id || !user?.id) {
-        setError('Tenant or user not available')
+      if (!tenant?.tenant_id) {
+        setError('Tenant not available')
         setLoading(false)
         return
       }
@@ -152,13 +156,19 @@ function TimesheetList({ testMode = false }) {
           overtime_hours,
           submission_status,
           submitted_at,
+          approved_at,
+          employee:hrms_employees!hrms_timesheets_employee_id_fkey(
+            employee_id,
+            first_name,
+            last_name,
+            employee_code
+          ),
           project:hrms_projects!hrms_timesheets_project_id_fkey(
             project_id,
             project_name
           )
         `, { count: 'exact' })
         .eq('tenant_id', tenant.tenant_id)
-        .eq('employee_id', user.id) // TODO: Get actual employee_id from user
         .order('period_start_date', { ascending: false })
 
       // Filter by business if selected
@@ -166,9 +176,22 @@ function TimesheetList({ testMode = false }) {
         query = query.eq('business_id', selectedBusiness.business_id)
       }
 
+      // Filter by date range
+      if (startDate) {
+        query = query.gte('period_end_date', startDate)
+      }
+      if (endDate) {
+        query = query.lte('period_start_date', endDate)
+      }
+
       // Filter by status
       if (statusFilter !== 'all') {
         query = query.eq('submission_status', statusFilter)
+      }
+
+      // Filter by employee
+      if (employeeFilter !== 'all') {
+        query = query.eq('employee_id', employeeFilter)
       }
 
       // Filter by project
@@ -195,15 +218,32 @@ function TimesheetList({ testMode = false }) {
     }
   }
 
+  const fetchEmployees = async () => {
+    try {
+      if (!tenant?.tenant_id) return
+
+      const { data, error } = await supabase
+        .from('hrms_employees')
+        .select('employee_id, first_name, last_name, employee_code')
+        .eq('tenant_id', tenant.tenant_id)
+        .eq('is_active', true)
+        .order('first_name', { ascending: true })
+
+      if (error) throw error
+      setEmployees(data || [])
+    } catch (err) {
+      console.error('Error fetching employees:', err)
+    }
+  }
+
   const fetchProjects = async () => {
     try {
-      if (!tenant?.tenant_id || !user?.id) return
+      if (!tenant?.tenant_id) return
 
       const { data, error } = await supabase
         .from('hrms_projects')
         .select('project_id, project_name')
         .eq('tenant_id', tenant.tenant_id)
-        .eq('employee_id', user.id) // TODO: Get actual employee_id from user
         .eq('project_status', 'active')
         .order('project_name', { ascending: true })
 
@@ -218,8 +258,14 @@ function TimesheetList({ testMode = false }) {
     return timesheets.filter((timesheet) => {
       if (searchQuery) {
         const query = searchQuery.toLowerCase()
+        const employeeName = `${timesheet.employee?.first_name || ''} ${timesheet.employee?.last_name || ''}`.toLowerCase()
+        const employeeCode = timesheet.employee?.employee_code?.toLowerCase() || ''
         const projectName = timesheet.project?.project_name?.toLowerCase() || ''
-        if (!projectName.includes(query)) {
+        if (
+          !employeeName.includes(query) &&
+          !employeeCode.includes(query) &&
+          !projectName.includes(query)
+        ) {
           return false
         }
       }
@@ -245,17 +291,37 @@ function TimesheetList({ testMode = false }) {
     return new Date(dateString).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
   }
 
-  // Calculate progress percentage
-  const getProgressPercentage = (hours) => {
-    return Math.min((hours / 40) * 100, 100)
+  // Download PDF
+  const handleDownloadPDF = async (timesheet) => {
+    try {
+      // TODO: Implement PDF generation via Edge Function
+      console.log('Download PDF for timesheet:', timesheet.timesheet_id)
+      alert('PDF download functionality will be implemented via Edge Function')
+    } catch (err) {
+      console.error('Error downloading PDF:', err)
+      alert('Failed to download PDF')
+    }
   }
 
-  // Get progress color
-  const getProgressColor = (percentage) => {
-    if (percentage <= 50) return '#EF4444'
-    if (percentage <= 80) return '#F59E0B'
-    if (percentage <= 100) return '#10B981'
-    return '#6366F1' // Overtime
+  // Download Excel
+  const handleDownloadExcel = async () => {
+    try {
+      // TODO: Implement Excel export via Edge Function
+      const filters = {
+        tenant_id: tenant?.tenant_id,
+        business_id: selectedBusiness?.business_id,
+        employee_id: employeeFilter !== 'all' ? employeeFilter : null,
+        project_id: projectFilter !== 'all' ? projectFilter : null,
+        status: statusFilter !== 'all' ? statusFilter : null,
+        start_date: startDate,
+        end_date: endDate,
+      }
+      console.log('Download Excel with filters:', filters)
+      alert('Excel download functionality will be implemented via Edge Function')
+    } catch (err) {
+      console.error('Error downloading Excel:', err)
+      alert('Failed to download Excel')
+    }
   }
 
   if (loading) {
@@ -273,96 +339,20 @@ function TimesheetList({ testMode = false }) {
     )
   }
 
-  const currentPeriod = getCurrentPeriod()
-  const currentPeriodFormatted = formatDateRange(currentPeriod.start, currentPeriod.end)
-
   return (
     <div className="timesheet-list-container">
       <div className="timesheet-list-header">
         <div>
-          <h1 className="page-title">My Timesheets</h1>
-          <p className="page-subtitle">Track and manage your working hours</p>
+          <h1 className="page-title">Timesheets</h1>
+          <p className="page-subtitle">View and download employee timesheets</p>
         </div>
         <div className="header-actions">
-          <div className="view-mode-toggle">
-            <button
-              className={`view-mode-btn ${viewMode === 'calendar' ? 'active' : ''}`}
-              onClick={() => setViewMode('calendar')}
-              title="Calendar View"
-            >
-              <CalendarIcon className="icon-sm" />
-              Calendar
-            </button>
-            <button
-              className={`view-mode-btn ${viewMode === 'list' ? 'active' : ''}`}
-              onClick={() => setViewMode('list')}
-              title="List View"
-            >
-              <ListBulletIcon className="icon-sm" />
-              List
-            </button>
-          </div>
-          <Link to="/hrms/timesheets/new" className="btn btn-primary">
-            <PlusIcon className="icon-sm" />
-            New Timesheet
-          </Link>
+          <button className="btn btn-secondary" onClick={handleDownloadExcel}>
+            <DocumentArrowDownIcon className="icon-sm" />
+            Export Excel
+          </button>
         </div>
       </div>
-
-      {/* Current Period Card */}
-      {currentPeriodTimesheet && (
-        <div className="current-period-card">
-          <div className="current-period-header">
-            <h2>CURRENT PERIOD</h2>
-            <span className="period-dates">{currentPeriodFormatted}</span>
-          </div>
-          <div className="current-period-content">
-            <div className="hours-summary">
-              <div className="hours-display">
-                <span className="hours-text">
-                  {currentPeriodTimesheet.total_hours_worked} / 40 hrs
-                </span>
-                <div className="progress-bar-container">
-                  <div
-                    className="progress-bar"
-                    style={{
-                      width: `${getProgressPercentage(currentPeriodTimesheet.total_hours_worked)}%`,
-                      backgroundColor: getProgressColor(getProgressPercentage(currentPeriodTimesheet.total_hours_worked)),
-                    }}
-                  />
-                </div>
-                <div className="hours-breakdown">
-                  <span>Regular: {currentPeriodTimesheet.regular_hours} hrs</span>
-                  {currentPeriodTimesheet.overtime_hours > 0 && (
-                    <span>Overtime: {currentPeriodTimesheet.overtime_hours} hrs</span>
-                  )}
-                </div>
-              </div>
-            </div>
-            <div className="status-summary">
-              <div className="status-badge-large" style={{
-                backgroundColor: TIMESHEET_STATUSES[currentPeriodTimesheet.submission_status]?.bg || '#F3F4F6',
-                color: TIMESHEET_STATUSES[currentPeriodTimesheet.submission_status]?.text || '#374151',
-              }}>
-                {TIMESHEET_STATUSES[currentPeriodTimesheet.submission_status]?.label || currentPeriodTimesheet.submission_status}
-              </div>
-              <div className="period-actions">
-                <Link
-                  to={`/hrms/timesheets/${currentPeriodTimesheet.timesheet_id}`}
-                  className="btn btn-secondary"
-                >
-                  Edit Timesheet
-                </Link>
-                {currentPeriodTimesheet.submission_status === 'draft' && (
-                  <button className="btn btn-primary">
-                    Submit for Review
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Filters */}
       <div className="filters-bar">
@@ -370,7 +360,7 @@ function TimesheetList({ testMode = false }) {
           <MagnifyingGlassIcon className="search-icon" />
           <input
             type="text"
-            placeholder="Search projects..."
+            placeholder="Search employees, projects..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="search-input"
@@ -378,6 +368,47 @@ function TimesheetList({ testMode = false }) {
           />
         </div>
         <div className="filter-group">
+          <select
+            value={periodType}
+            onChange={(e) => setPeriodType(e.target.value)}
+            className="filter-select"
+            aria-label="Period Type"
+          >
+            {Object.entries(PERIOD_TYPES).map(([key, label]) => (
+              <option key={key} value={key}>{label}</option>
+            ))}
+          </select>
+          {periodType === 'custom' && (
+            <>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="filter-select"
+                aria-label="Start Date"
+              />
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="filter-select"
+                aria-label="End Date"
+              />
+            </>
+          )}
+          <select
+            value={employeeFilter}
+            onChange={(e) => setEmployeeFilter(e.target.value)}
+            className="filter-select"
+            aria-label="Employee"
+          >
+            <option value="all">All Employees</option>
+            {employees.map((emp) => (
+              <option key={emp.employee_id} value={emp.employee_id}>
+                {emp.first_name} {emp.last_name} ({emp.employee_code})
+              </option>
+            ))}
+          </select>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
@@ -403,12 +434,14 @@ function TimesheetList({ testMode = false }) {
               </option>
             ))}
           </select>
-          {(searchQuery || statusFilter !== 'all' || projectFilter !== 'all') && (
+          {(searchQuery || statusFilter !== 'all' || employeeFilter !== 'all' || projectFilter !== 'all') && (
             <button
               onClick={() => {
                 setSearchQuery('')
                 setStatusFilter('all')
+                setEmployeeFilter('all')
                 setProjectFilter('all')
+                setPeriodType('month')
               }}
               className="btn btn-secondary"
             >
@@ -419,85 +452,80 @@ function TimesheetList({ testMode = false }) {
       </div>
 
       {/* Timesheet Table */}
-      {viewMode === 'list' && (
-        <div className="timesheet-table-wrapper">
-          <table className="timesheet-table">
-            <thead>
+      <div className="timesheet-table-wrapper">
+        <table className="timesheet-table">
+          <thead>
+            <tr>
+              <th>Period</th>
+              <th>Employee</th>
+              <th>Project</th>
+              <th>Hours</th>
+              <th>Regular</th>
+              <th>Overtime</th>
+              <th>Status</th>
+              <th>Submitted</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredTimesheets.length === 0 ? (
               <tr>
-                <th>Period</th>
-                <th>Project</th>
-                <th>Hours</th>
-                <th>Regular</th>
-                <th>Overtime</th>
-                <th>Status</th>
-                <th>Submitted</th>
-                <th>Actions</th>
+                <td colSpan="9" className="empty-state">
+                  <p>No timesheets found</p>
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {filteredTimesheets.length === 0 ? (
-                <tr>
-                  <td colSpan="8" className="empty-state">
-                    <p>No timesheets found</p>
-                    <Link to="/hrms/timesheets/new" className="btn btn-primary">
-                      Create First Timesheet
-                    </Link>
+            ) : (
+              filteredTimesheets.map((timesheet) => (
+                <tr key={timesheet.timesheet_id}>
+                  <td>{formatDateRange(timesheet.period_start_date, timesheet.period_end_date)}</td>
+                  <td>
+                    <div>
+                      <div className="employee-name">
+                        {timesheet.employee?.first_name} {timesheet.employee?.last_name}
+                      </div>
+                      <div className="employee-code">{timesheet.employee?.employee_code}</div>
+                    </div>
+                  </td>
+                  <td>{timesheet.project?.project_name || '-'}</td>
+                  <td>{timesheet.total_hours_worked}</td>
+                  <td>{timesheet.regular_hours}</td>
+                  <td>{timesheet.overtime_hours || 0}</td>
+                  <td>
+                    <span
+                      className="status-badge"
+                      style={{
+                        backgroundColor: TIMESHEET_STATUSES[timesheet.submission_status]?.bg || '#F3F4F6',
+                        color: TIMESHEET_STATUSES[timesheet.submission_status]?.text || '#374151',
+                      }}
+                    >
+                      {TIMESHEET_STATUSES[timesheet.submission_status]?.label || timesheet.submission_status}
+                    </span>
+                  </td>
+                  <td>{timesheet.submitted_at ? formatDate(timesheet.submitted_at) : '-'}</td>
+                  <td>
+                    <div className="action-buttons">
+                      <Link
+                        to={`/hrms/timesheets/${timesheet.timesheet_id}`}
+                        className="icon-button"
+                        title="View"
+                      >
+                        <EyeIcon className="icon-sm" />
+                      </Link>
+                      <button
+                        onClick={() => handleDownloadPDF(timesheet)}
+                        className="icon-button"
+                        title="Download PDF"
+                      >
+                        <ArrowDownTrayIcon className="icon-sm" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
-              ) : (
-                filteredTimesheets.map((timesheet) => (
-                  <tr key={timesheet.timesheet_id}>
-                    <td>{formatDateRange(timesheet.period_start_date, timesheet.period_end_date)}</td>
-                    <td>{timesheet.project?.project_name || '-'}</td>
-                    <td>{timesheet.total_hours_worked}</td>
-                    <td>{timesheet.regular_hours}</td>
-                    <td>{timesheet.overtime_hours || 0}</td>
-                    <td>
-                      <span
-                        className="status-badge"
-                        style={{
-                          backgroundColor: TIMESHEET_STATUSES[timesheet.submission_status]?.bg || '#F3F4F6',
-                          color: TIMESHEET_STATUSES[timesheet.submission_status]?.text || '#374151',
-                        }}
-                      >
-                        {TIMESHEET_STATUSES[timesheet.submission_status]?.label || timesheet.submission_status}
-                      </span>
-                    </td>
-                    <td>{timesheet.submitted_at ? formatDate(timesheet.submitted_at) : '-'}</td>
-                    <td>
-                      <div className="action-buttons">
-                        <Link
-                          to={`/hrms/timesheets/${timesheet.timesheet_id}`}
-                          className="icon-button"
-                          title="View"
-                        >
-                          <EyeIcon className="icon-sm" />
-                        </Link>
-                        {timesheet.submission_status === 'draft' && (
-                          <Link
-                            to={`/hrms/timesheets/${timesheet.timesheet_id}/edit`}
-                            className="icon-button"
-                            title="Edit"
-                          >
-                            <PencilIcon className="icon-sm" />
-                          </Link>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      {/* Calendar View - Placeholder */}
-      {viewMode === 'calendar' && (
-        <div className="calendar-view-placeholder">
-          <p>Calendar view coming soon</p>
-        </div>
-      )}
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
 
       {/* Pagination */}
       {totalPages > 1 && (
