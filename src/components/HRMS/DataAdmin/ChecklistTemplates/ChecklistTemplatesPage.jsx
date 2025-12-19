@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import { supabase } from '../../../../api/supabaseClient'
 import { useTenant } from '../../../../contexts/TenantProvider'
 import { useAuth } from '../../../../contexts/AuthProvider'
+import ChecklistTemplateBuilder from './ChecklistTemplateBuilder'
 import './ChecklistTemplatesPage.css'
 
 export default function ChecklistTemplatesPage() {
@@ -13,6 +14,8 @@ export default function ChecklistTemplatesPage() {
   const [error, setError] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
   const [filterType, setFilterType] = useState('ALL')
+  const [showBuilder, setShowBuilder] = useState(false)
+  const [editingTemplate, setEditingTemplate] = useState(null)
 
   const fetchData = useCallback(async () => {
     if (!tenant?.tenant_id) return
@@ -131,7 +134,13 @@ export default function ChecklistTemplatesPage() {
       </div>
 
       <div className="checklist-templates-actions">
-        <button className="btn btn-primary" onClick={() => alert('Template builder coming soon!')}>
+        <button
+          className="btn btn-primary"
+          onClick={() => {
+            setEditingTemplate(null)
+            setShowBuilder(true)
+          }}
+        >
           + Create Template
         </button>
         <div className="search-filter-bar">
@@ -205,10 +214,41 @@ export default function ChecklistTemplatesPage() {
                   )}
                 </div>
                 <div className="checklist-template-card-actions">
-                  <button className="btn btn-sm btn-primary" onClick={() => alert('Edit coming soon!')}>
+                  <button
+                    className="btn btn-sm btn-primary"
+                    onClick={() => {
+                      setEditingTemplate(template)
+                      setShowBuilder(true)
+                    }}
+                  >
                     Edit
                   </button>
-                  <button className="btn btn-sm btn-secondary" onClick={() => alert('Duplicate coming soon!')}>
+                  <button
+                    className="btn btn-sm btn-secondary"
+                    onClick={async () => {
+                      try {
+                        // Fetch full template data for duplication
+                        const { data: templateData, error: templateError } = await supabase
+                          .from('hrms_checklist_templates')
+                          .select('*')
+                          .eq('template_id', template.template_id)
+                          .single()
+
+                        if (templateError) throw templateError
+
+                        // Create duplicate without template_id
+                        const duplicate = { ...templateData }
+                        delete duplicate.template_id
+                        duplicate.template_name = `${duplicate.template_name} (Copy)`
+
+                        setEditingTemplate(duplicate)
+                        setShowBuilder(true)
+                      } catch (err) {
+                        console.error('Error duplicating template:', err)
+                        alert('Failed to duplicate template: ' + err.message)
+                      }
+                    }}
+                  >
                     Duplicate
                   </button>
                 </div>
@@ -217,6 +257,23 @@ export default function ChecklistTemplatesPage() {
           </div>
         </div>
       ))}
+
+      {showBuilder && (
+        <ChecklistTemplateBuilder
+          template={editingTemplate}
+          onClose={() => {
+            setShowBuilder(false)
+            setEditingTemplate(null)
+          }}
+          onSave={() => {
+            setShowBuilder(false)
+            setEditingTemplate(null)
+            fetchData()
+          }}
+          tenantId={tenant?.tenant_id}
+          userId={profile?.id}
+        />
+      )}
     </div>
   )
 }

@@ -68,8 +68,15 @@ export default function ChecklistTypesPage() {
       setChecklistTypes(typesWithCounts)
     } catch (err) {
       console.error('Error fetching checklist types:', err)
-      setError(err.message || 'Failed to load checklist types')
+      const errorMessage =
+        err.message || err.error?.message || 'Failed to load checklist types. Please try again later.'
+      setError(errorMessage)
       setChecklistTypes([])
+      
+      // Log to error tracking service if available
+      if (window.Sentry) {
+        window.Sentry.captureException(err)
+      }
     } finally {
       setLoading(false)
     }

@@ -1,0 +1,40 @@
+.test-email-modal {
+  max-width: 700px;
+}
+
+.variables-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.variable-category {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.variable-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.variable-input-group label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.variable-input-group input {
+  padding: 8px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+@media (max-width: 768px) {
+  .variables-grid {
+    grid-template-columns: 1fr;
+  }
+}

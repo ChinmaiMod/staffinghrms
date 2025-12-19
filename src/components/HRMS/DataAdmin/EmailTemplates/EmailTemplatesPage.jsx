@@ -2,7 +2,9 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import { supabase } from '../../../../api/supabaseClient'
 import { useTenant } from '../../../../contexts/TenantProvider'
 import { useAuth } from '../../../../contexts/AuthProvider'
+import { sendTestEmail } from '../../../../api/edgeFunctions'
 import EmailTemplateForm from './EmailTemplateForm'
+import TestEmailModal from './TestEmailModal'
 import './EmailTemplatesPage.css'
 
 const TEMPLATE_CATEGORIES = [
@@ -52,6 +54,8 @@ export default function EmailTemplatesPage() {
   const [error, setError] = useState('')
   const [showForm, setShowForm] = useState(false)
   const [editingTemplate, setEditingTemplate] = useState(null)
+  const [showTestModal, setShowTestModal] = useState(false)
+  const [testingTemplate, setTestingTemplate] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [filterCategory, setFilterCategory] = useState('ALL')
   const [filterStatus, setFilterStatus] = useState('ALL')
@@ -76,8 +80,15 @@ export default function EmailTemplatesPage() {
       setTemplates(data || [])
     } catch (err) {
       console.error('Error fetching email templates:', err)
-      setError(err.message || 'Failed to load email templates')
+      const errorMessage =
+        err.message || err.error?.message || 'Failed to load email templates. Please try again later.'
+      setError(errorMessage)
       setTemplates([])
+      
+      // Log to error tracking service if available
+      if (window.Sentry) {
+        window.Sentry.captureException(err)
+      }
     } finally {
       setLoading(false)
     }
@@ -123,14 +134,22 @@ export default function EmailTemplatesPage() {
     }
   }
 
-  const handleTestEmail = async (template) => {
-    const email = prompt('Enter email address to send test email:')
-    if (!email) return
+  const handleTestEmail = (template) => {
+    setTestingTemplate(template)
+    setShowTestModal(true)
+  }
+
+  const handleSendTestEmail = async (recipientEmail, variables) => {
+    if (!testingTemplate) return
 
     try {
-      // In production, this would call an edge function to send the test email
-      alert(`Test email would be sent to ${email} using template "${template.template_name}"`)
-      // TODO: Implement actual test email sending via edge function
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+
+      await sendTestEmail(testingTemplate.template_id, recipientEmail, variables, token)
+      alert(`Test email sent successfully to ${recipientEmail}`)
+      setShowTestModal(false)
+      setTestingTemplate(null)
     } catch (err) {
       console.error('Error sending test email:', err)
       alert('Failed to send test email: ' + err.message)
@@ -293,6 +312,18 @@ export default function EmailTemplatesPage() {
           onSave={handleFormSave}
           tenantId={tenant?.tenant_id}
           userId={profile?.id}
+          availableVariables={AVAILABLE_VARIABLES}
+        />
+      )}
+
+      {showTestModal && testingTemplate && (
+        <TestEmailModal
+          template={testingTemplate}
+          onClose={() => {
+            setShowTestModal(false)
+            setTestingTemplate(null)
+          }}
+          onSend={handleSendTestEmail}
           availableVariables={AVAILABLE_VARIABLES}
         />
       )}

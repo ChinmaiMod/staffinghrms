@@ -138,7 +138,19 @@ export default function EmailTemplateForm({
       onSave()
     } catch (err) {
       console.error('Error saving email template:', err)
-      alert('Failed to save email template: ' + err.message)
+      const errorMessage =
+        err.message || err.error?.message || 'Failed to save email template. Please check your input and try again.'
+      
+      // Show user-friendly error
+      setErrors({ submit: errorMessage })
+      
+      // Scroll to top to show error
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+      
+      // Log to error tracking service if available
+      if (window.Sentry) {
+        window.Sentry.captureException(err)
+      }
     } finally {
       setIsSubmitting(false)
     }
@@ -353,6 +365,12 @@ export default function EmailTemplateForm({
               </small>
             </div>
           </div>
+
+          {errors.submit && (
+            <div className="alert alert-error" style={{ marginBottom: '16px' }}>
+              {errors.submit}
+            </div>
+          )}
 
           <div className="form-actions">
             <button

@@ -248,6 +248,26 @@ export async function sendNewsletter(data, token) {
   return callEdgeFunction('sendNewsletter', data, token)
 }
 
+// Send test email with template
+export async function sendTestEmail(templateId, recipientEmail, variables, token) {
+  try {
+    const response = await callEdgeFunction(
+      'sendTestEmail',
+      {
+        template_id: templateId,
+        recipient_email: recipientEmail,
+        variables: variables || {},
+      },
+      token
+    )
+    return response
+  } catch (error) {
+    console.error('Error sending test email:', error)
+    // Fallback: try direct Supabase function if edge function doesn't exist
+    throw new Error('Failed to send test email: ' + (error.message || 'Unknown error'))
+  }
+}
+
 // Email templates / notifications wrappers (use edge functions or direct DB functions later)
 export async function listEmailTemplates(token) {
   const headers = { 'Authorization': `Bearer ${token || SUPABASE_ANON_KEY}`, 'apikey': SUPABASE_ANON_KEY }
