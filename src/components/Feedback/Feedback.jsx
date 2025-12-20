@@ -2,7 +2,9 @@ import { useState } from 'react';
 import { supabase } from '../../api/supabaseClient';
 import { useAuth } from '../../contexts/AuthProvider';
 import { useTenant } from '../../contexts/TenantProvider';
-import { validateTextField, validateSelect, handleSupabaseError, handleError } from '../../utils/validators';
+import { useToast } from '../../contexts/ToastProvider';
+import { validateTextField, validateSelect } from '../../utils/validators';
+import { normalizeError, getErrorMessage } from '../../utils/errorResponse';
 import './Feedback.css';
 
 const Feedback = () => {
@@ -97,8 +99,7 @@ const Feedback = () => {
         .single();
 
       if (dbError) {
-        const dbErrorMessage = handleSupabaseError(dbError);
-        throw new Error(dbErrorMessage);
+        throw dbError;
       }
 
       // Send email via edge function
@@ -122,6 +123,9 @@ const Feedback = () => {
         // Don't throw - feedback is saved, email is nice-to-have
       }
 
+      // Show success toast
+      showSuccess('Thank you for your feedback! We\'ve received your message and will review it shortly.');
+      
       setSuccess(true);
       setFormData({
         subject: '',
@@ -134,7 +138,10 @@ const Feedback = () => {
 
     } catch (err) {
       console.error('Error submitting feedback:', err);
-      setError(handleError(err, 'feedback submission'));
+      const errorResponse = normalizeError(err, 'feedback submission');
+      const errorMessage = getErrorMessage(errorResponse);
+      setError(errorMessage);
+      showErrorResponse(errorResponse);
     } finally {
       setLoading(false);
     }

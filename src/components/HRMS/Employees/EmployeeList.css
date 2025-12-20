@@ -373,7 +373,7 @@
   text-align: left;
   font-size: 12px;
   font-weight: 600;
-  color: var(--color-text-secondary, #6b7280);
+  color: var(--color-gray-700, #374151);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   white-space: nowrap;

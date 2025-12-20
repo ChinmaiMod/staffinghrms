@@ -5,6 +5,7 @@ import App from './App'
 import { AuthProvider } from './contexts/AuthProvider'
 import { TenantProvider } from './contexts/TenantProvider'
 import { PermissionsProvider } from './contexts/PermissionsProvider'
+import { ToastProvider } from './contexts/ToastProvider'
 import './styles/index.css'
 import './styles/design-system.css'
 
@@ -14,7 +15,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       <AuthProvider>
         <TenantProvider>
           <PermissionsProvider>
-            <App />
+            <ToastProvider>
+              <App />
+            </ToastProvider>
           </PermissionsProvider>
         </TenantProvider>
       </AuthProvider>

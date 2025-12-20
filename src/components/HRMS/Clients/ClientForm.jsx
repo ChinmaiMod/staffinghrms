@@ -4,6 +4,8 @@ import { ArrowLeftIcon } from '@heroicons/react/24/outline'
 import { supabase } from '../../../api/supabaseClient'
 import { useTenant } from '../../../contexts/TenantProvider'
 import { useAuth } from '../../../contexts/AuthProvider'
+import { useToast } from '../../../contexts/ToastProvider'
+import { normalizeError, getErrorMessage } from '../../../utils/errorResponse'
 import LoadingSpinner from '../../Shared/LoadingSpinner'
 import './ClientForm.css'
 
@@ -17,6 +19,7 @@ function ClientForm() {
   const navigate = useNavigate()
   const { tenant, selectedBusiness } = useTenant()
   const { user } = useAuth()
+  const { showSuccess, showErrorResponse } = useToast()
   const isEditMode = !!clientId
 
   const [loading, setLoading] = useState(true)
@@ -149,10 +152,18 @@ function ClientForm() {
         if (insertError) throw insertError
       }
 
+      // Show success toast
+      showSuccess(
+        isEditMode ? 'Client updated successfully' : 'Client created successfully'
+      )
+
       navigate('/hrms/clients')
     } catch (err) {
       console.error('Error saving client:', err)
-      setError(err.message || 'Failed to save client')
+      const errorResponse = normalizeError(err, 'client form submission')
+      const errorMessage = getErrorMessage(errorResponse)
+      setError(errorMessage)
+      showErrorResponse(errorResponse)
       setSaving(false)
     }
   }

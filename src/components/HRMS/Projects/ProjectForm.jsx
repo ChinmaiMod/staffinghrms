@@ -4,6 +4,8 @@ import { ArrowLeftIcon } from '@heroicons/react/24/outline'
 import { supabase } from '../../../api/supabaseClient'
 import { useTenant } from '../../../contexts/TenantProvider'
 import { useAuth } from '../../../contexts/AuthProvider'
+import { useToast } from '../../../contexts/ToastProvider'
+import { normalizeError, getErrorMessage } from '../../../utils/errorResponse'
 import LoadingSpinner from '../../Shared/LoadingSpinner'
 import './ProjectForm.css'
 
@@ -17,6 +19,7 @@ function ProjectForm({ testMode = false }) {
   const navigate = useNavigate()
   const { tenant, selectedBusiness } = useTenant()
   const { user } = useAuth()
+  const { showSuccess, showErrorResponse } = useToast()
   const isEditMode = !!projectId
 
   const [loading, setLoading] = useState(!testMode)
@@ -245,10 +248,18 @@ function ProjectForm({ testMode = false }) {
           })
       }
 
+      // Show success toast
+      showSuccess(
+        isEditMode ? 'Project updated successfully' : 'Project created successfully'
+      )
+      
       navigate(`/hrms/projects/${result.project_id}`)
     } catch (err) {
       console.error('Error saving project:', err)
-      setError(err.message || 'Failed to save project')
+      const errorResponse = normalizeError(err, 'project form submission')
+      const errorMessage = getErrorMessage(errorResponse)
+      setError(errorMessage)
+      showErrorResponse(errorResponse)
       setSaving(false)
     }
   }

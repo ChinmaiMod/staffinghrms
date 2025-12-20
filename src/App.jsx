@@ -19,6 +19,7 @@ import SettingsManagement from './components/HRMS/Settings/SettingsManagement'
 import { IssueList, IssueReport, IssueDetail, IssueManagement } from './components/IssueReport'
 import LoginPage from './components/Auth/LoginPage'
 import LoadingSpinner from './components/Shared/LoadingSpinner'
+import { ToastContainer } from './components/Shared/Toast'
 
 // Protected Route wrapper
 function ProtectedRoute({ children }) {
@@ -52,7 +53,8 @@ function PublicRoute({ children }) {
 
 function App() {
   return (
-    <Routes>
+    <>
+      <Routes>
       {/* Public Routes */}
       <Route path="/login" element={
         <PublicRoute>
@@ -96,7 +98,9 @@ function App() {
       {/* Default redirect */}
       <Route path="/" element={<Navigate to="/hrms/dashboard" replace />} />
       <Route path="*" element={<Navigate to="/hrms/dashboard" replace />} />
-    </Routes>
+      </Routes>
+      <ToastContainer />
+    </>
   )
 }
 

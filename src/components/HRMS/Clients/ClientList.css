@@ -140,7 +140,7 @@
   text-align: left;
   font-size: 12px;
   font-weight: 600;
-  color: #6B7280;
+  color: #374151;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -150,6 +150,14 @@
   border-top: 1px solid #E5E7EB;
   font-size: 14px;
   color: #374151;
+}
+
+.client-table tbody tr:hover {
+  background-color: #F9FAFB;
+}
+
+.client-table tbody tr.selected {
+  background-color: #DBEAFE;
 }
 
 .client-name-cell {
@@ -254,6 +262,11 @@
 .pagination-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.pagination-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.4);
 }
 
 .pagination-info {

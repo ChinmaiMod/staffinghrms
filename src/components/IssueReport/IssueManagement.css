@@ -166,19 +166,27 @@
 }
 
 .issues-table th {
-  padding: 1rem;
+  padding: 12px 16px;
   text-align: left;
   font-weight: 600;
-  color: #1e293b;
-  font-size: 0.875rem;
+  color: #374151;
+  font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
 .issues-table td {
-  padding: 1rem;
-  border-top: 1px solid #e2e8f0;
-  color: #475569;
+  padding: 16px;
+  border-top: 1px solid #E5E7EB;
+  color: #374151;
+}
+
+.issues-table tbody tr:hover {
+  background-color: #F9FAFB;
+}
+
+.issues-table tbody tr.selected {
+  background-color: #DBEAFE;
 }
 
 .issue-id-cell {
