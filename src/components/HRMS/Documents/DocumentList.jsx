@@ -72,26 +72,10 @@ function DocumentList() {
         return
       }
 
-      // Build query
+      // Build query - fetch documents first, then enrich with related entities
       let query = supabase
         .from('hrms_documents')
-        .select(
-          `
-          *,
-          employee:hrms_employees!hrms_documents_entity_id_fkey(
-            employee_id,
-            first_name,
-            last_name,
-            employee_code
-          ),
-          project:hrms_projects!hrms_documents_entity_id_fkey(
-            project_id,
-            project_name,
-            project_code
-          )
-        `,
-          { count: 'exact' }
-        )
+        .select('*', { count: 'exact' })
         .eq('tenant_id', tenant.tenant_id)
         .order('uploaded_at', { ascending: false })
 
@@ -148,7 +132,10 @@ function DocumentList() {
 
       if (queryError) throw queryError
 
-      setDocuments(data || [])
+      // Enrich documents with related entity data
+      const enrichedDocuments = await enrichDocumentsWithEntities(data || [])
+
+      setDocuments(enrichedDocuments)
       setTotalCount(count || 0)
       setLoading(false)
     } catch (err) {
@@ -227,6 +214,60 @@ function DocumentList() {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
+    })
+  }
+
+  // Enrich documents with related entity information
+  const enrichDocumentsWithEntities = async (documents) => {
+    if (!documents || documents.length === 0) return documents
+
+    // Group documents by entity type
+    const employeeDocs = documents.filter(doc => doc.entity_type === 'employee')
+    const projectDocs = documents.filter(doc => doc.entity_type === 'project')
+
+    // Fetch employee data for employee documents
+    const employeeIds = [...new Set(employeeDocs.map(doc => doc.entity_id))]
+    let employeesMap = {}
+    if (employeeIds.length > 0) {
+      const { data: employees } = await supabase
+        .from('hrms_employees')
+        .select('employee_id, first_name, last_name, employee_code')
+        .in('employee_id', employeeIds)
+      
+      if (employees) {
+        employeesMap = employees.reduce((acc, emp) => {
+          acc[emp.employee_id] = emp
+          return acc
+        }, {})
+      }
+    }
+
+    // Fetch project data for project documents
+    const projectIds = [...new Set(projectDocs.map(doc => doc.entity_id))]
+    let projectsMap = {}
+    if (projectIds.length > 0) {
+      const { data: projects } = await supabase
+        .from('hrms_projects')
+        .select('project_id, project_name, project_code')
+        .in('project_id', projectIds)
+      
+      if (projects) {
+        projectsMap = projects.reduce((acc, proj) => {
+          acc[proj.project_id] = proj
+          return acc
+        }, {})
+      }
+    }
+
+    // Enrich documents with related entity data
+    return documents.map(doc => {
+      if (doc.entity_type === 'employee' && employeesMap[doc.entity_id]) {
+        return { ...doc, employee: employeesMap[doc.entity_id] }
+      }
+      if (doc.entity_type === 'project' && projectsMap[doc.entity_id]) {
+        return { ...doc, project: projectsMap[doc.entity_id] }
+      }
+      return doc
     })
   }
 

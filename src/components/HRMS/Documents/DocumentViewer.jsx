@@ -49,36 +49,59 @@ function DocumentViewer() {
       setLoading(true)
       setError(null)
 
-      const { data, error: fetchError } = await supabase
+      // Fetch document first
+      const { data: docData, error: fetchError } = await supabase
         .from('hrms_documents')
-        .select(
-          `
-          *,
-          employee:hrms_employees!hrms_documents_entity_id_fkey(
-            employee_id,
-            first_name,
-            last_name,
-            employee_code
-          ),
-          project:hrms_projects!hrms_documents_entity_id_fkey(
-            project_id,
-            project_name,
-            project_code
-          ),
-          uploaded_by_user:profiles!hrms_documents_uploaded_by_fkey(
-            id,
-            full_name,
-            email
-          )
-        `
-        )
+        .select('*')
         .eq('document_id', documentId)
         .eq('tenant_id', tenant.tenant_id)
         .single()
 
       if (fetchError) throw fetchError
 
-      setDocument(data)
+      // Enrich with related entities
+      let enrichedDocument = { ...docData }
+
+      // Fetch employee if entity_type is employee
+      if (docData.entity_type === 'employee') {
+        const { data: employee } = await supabase
+          .from('hrms_employees')
+          .select('employee_id, first_name, last_name, employee_code')
+          .eq('employee_id', docData.entity_id)
+          .single()
+        
+        if (employee) {
+          enrichedDocument.employee = employee
+        }
+      }
+
+      // Fetch project if entity_type is project
+      if (docData.entity_type === 'project') {
+        const { data: project } = await supabase
+          .from('hrms_projects')
+          .select('project_id, project_name, project_code')
+          .eq('project_id', docData.entity_id)
+          .single()
+        
+        if (project) {
+          enrichedDocument.project = project
+        }
+      }
+
+      // Fetch uploaded_by user profile
+      if (docData.uploaded_by) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('id, full_name, email')
+          .eq('id', docData.uploaded_by)
+          .single()
+        
+        if (profile) {
+          enrichedDocument.uploaded_by_user = profile
+        }
+      }
+
+      setDocument(enrichedDocument)
 
       // Load preview URL
       if (data?.file_path) {
