@@ -178,6 +178,7 @@ function Sidebar({ collapsed, onToggle }) {
                   }
                   title={collapsed ? item.label : undefined}
                   data-testid={`nav-${item.id}`}
+                  data-icon={item.id}
                 >
                   <Icon className="sidebar-icon" aria-hidden="true" />
                   {!collapsed && <span className="sidebar-label">{item.label}</span>}

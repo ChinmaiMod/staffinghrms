@@ -47,8 +47,10 @@
 .logo-text {
   font-size: 20px;
   font-weight: 700;
+  font-family: var(--font-primary, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
   color: #FFFFFF;
   white-space: nowrap;
+  letter-spacing: -0.01em;
 }
 
 .sidebar-toggle {
@@ -117,8 +119,10 @@
   color: #FFFFFF;
   text-decoration: none;
   border-radius: var(--radius-md, 6px);
+  font-family: var(--font-primary, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 400;
+  line-height: 1.5;
   transition: all var(--duration-fast, 150ms) var(--ease-in-out);
   white-space: nowrap;
   overflow: hidden;
@@ -162,10 +166,32 @@
   color: #FFFFFF;
 }
 
+/* Specific icon colors matching source CRM */
+.sidebar-link[data-icon="notifications"] .sidebar-icon {
+  color: #FBBF24;
+}
+
+.sidebar-link[data-icon="suggestions"] .sidebar-icon {
+  color: #FCD34D;
+}
+
+.sidebar-link[data-icon="issues"] .sidebar-icon {
+  color: #10B981;
+}
+
+/* Override icon colors when active */
+.sidebar-link.active[data-icon="notifications"] .sidebar-icon,
+.sidebar-link.active[data-icon="suggestions"] .sidebar-icon,
+.sidebar-link.active[data-icon="issues"] .sidebar-icon {
+  color: #FFFFFF;
+}
+
 .sidebar-label {
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-family: var(--font-primary, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  font-weight: 400;
 }
 
 .sidebar-divider {
