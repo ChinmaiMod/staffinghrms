@@ -211,9 +211,9 @@ function ClientList() {
             onChange={(e) => setStatusFilter(e.target.value)}
             className="filter-select"
           >
-            <option value="all">All Status</option>
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>
+            <option value="all">All Status</option>
           </select>
           {(searchQuery || industryFilter !== 'all' || statusFilter !== 'all') && (
             <button

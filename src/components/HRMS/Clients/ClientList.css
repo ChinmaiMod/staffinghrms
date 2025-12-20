@@ -65,9 +65,10 @@
 
 .filters-bar {
   display: flex;
-  gap: 12px;
+  align-items: center;
+  gap: var(--space-3, 12px);
   margin-bottom: var(--space-4, 16px);
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
 .search-box {
@@ -104,7 +105,9 @@
 
 .filter-group {
   display: flex;
-  gap: 8px;
+  align-items: center;
+  gap: var(--space-2, 8px);
+  flex-shrink: 0;
 }
 
 .filter-select {
