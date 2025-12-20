@@ -598,15 +598,15 @@ Icon:
   Color: Varies by menu item (see Icon Color Reference below)
 
 Hover:
-  Background: #F3F4F6
-  Color: #374151
-  Icon Color: #374151
+  Background: rgba(255, 255, 255, 0.1)
+  Color: #FFFFFF
+  Icon Color: Inherits from icon (see Icon Color Reference)
 
 Active/Current:
-  Background: #DBEAFE
-  Color: #1E40AF
-  Icon Color: #3B82F6
-  Font Weight: 600
+  Background: #4A90E2 (Light Blue)
+  Color: #FFFFFF
+  Icon Color: #FFFFFF (all icons turn white when active)
+  Font Weight: 500
 ```
 
 #### Menu Item with Submenu
@@ -860,8 +860,8 @@ Arrow: 6px triangle pointing left
 /* Sidebar */
 --sidebar-width-expanded: 256px;
 --sidebar-width-collapsed: 64px;
---sidebar-bg: #FFFFFF;
---sidebar-border: #E5E7EB;
+--sidebar-bg: #1E3A5F;
+--sidebar-border: rgba(255, 255, 255, 0.1);
 
 /* Header */
 --header-height: 64px;
@@ -874,16 +874,16 @@ Arrow: 6px triangle pointing left
 --menu-item-gap: 12px;
 --menu-item-radius: 6px;
 
---menu-text-default: #4B5563;
---menu-text-hover: #374151;
---menu-text-active: #1E40AF;
+--menu-text-default: #FFFFFF;
+--menu-text-hover: #FFFFFF;
+--menu-text-active: #FFFFFF;
 
---menu-icon-default: #6B7280;
---menu-icon-hover: #374151;
---menu-icon-active: #3B82F6;
+--menu-icon-default: Varies (see Icon Color Reference);
+--menu-icon-hover: Varies (see Icon Color Reference);
+--menu-icon-active: #FFFFFF;
 
---menu-bg-hover: #F3F4F6;
---menu-bg-active: #DBEAFE;
+--menu-bg-hover: rgba(255, 255, 255, 0.1);
+--menu-bg-active: #4A90E2;
 
 /* Section Header */
 --section-header-color: #9CA3AF;
