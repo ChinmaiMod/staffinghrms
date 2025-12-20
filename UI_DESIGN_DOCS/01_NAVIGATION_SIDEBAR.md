@@ -846,11 +846,7 @@ Arrow: 6px triangle pointing left
 | Default | Transparent | #FFFFFF | See Icon Color Reference above |
 | Hover | rgba(255, 255, 255, 0.1) | #FFFFFF | See Icon Color Reference above |
 | Active | #4A90E2 | #FFFFFF | #FFFFFF (all icons) |
-|-------|------------|------|------|
-| Default | Transparent | `#4B5563` | `#6B7280` |
-| Hover | `#F3F4F6` | `#374151` | `#374151` |
-| Active | `#DBEAFE` | `#1E40AF` | `#3B82F6` |
-| Submenu Active | Transparent | `#1E40AF` | - |
+| Submenu Active | Transparent | #FFFFFF | - |
 
 ---
 
