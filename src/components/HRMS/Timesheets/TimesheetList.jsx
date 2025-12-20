@@ -10,7 +10,6 @@ import {
 import { supabase } from '../../../api/supabaseClient'
 import { useTenant } from '../../../contexts/TenantProvider'
 import LoadingSpinner from '../../Shared/LoadingSpinner'
-import BusinessFilter from '../../Shared/BusinessFilter'
 import { useDebounce } from '../../../utils/debounce'
 import './TimesheetList.css'
 
@@ -349,7 +348,6 @@ function TimesheetList({ testMode = false }) {
 
   return (
     <div className="timesheet-list-container">
-      <BusinessFilter />
       <div className="timesheet-list-header">
         <div>
           <h1 className="page-title">Timesheets</h1>

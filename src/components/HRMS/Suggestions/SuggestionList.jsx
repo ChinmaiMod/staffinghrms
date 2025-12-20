@@ -4,7 +4,6 @@ import { supabase } from '../../../api/supabaseClient'
 import { useTenant } from '../../../contexts/TenantProvider'
 import { useAuth } from '../../../contexts/AuthProvider'
 import LoadingSpinner from '../../Shared/LoadingSpinner'
-import BusinessFilter from '../../Shared/BusinessFilter'
 import { useDebounce } from '../../../utils/debounce'
 import './SuggestionList.css'
 
@@ -161,9 +160,6 @@ function SuggestionList() {
 
   return (
     <div className="suggestion-list-container">
-      {/* Business Filter */}
-      <BusinessFilter />
-
       <div className="suggestion-list-header">
         <div>
           <h1 className="page-title">💡 Suggestions & Ideas</h1>

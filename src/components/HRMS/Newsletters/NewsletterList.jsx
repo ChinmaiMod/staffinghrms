@@ -15,7 +15,6 @@ import { supabase } from '../../../api/supabaseClient'
 import { useTenant } from '../../../contexts/TenantProvider'
 import { useAuth } from '../../../contexts/AuthProvider'
 import LoadingSpinner from '../../Shared/LoadingSpinner'
-import BusinessFilter from '../../Shared/BusinessFilter'
 import { useDebounce } from '../../../utils/debounce'
 import './NewsletterList.css'
 
@@ -171,9 +170,6 @@ function NewsletterList({ testMode = false }) {
 
   return (
     <div className="newsletter-list" data-testid="newsletter-list">
-      {/* Business Filter */}
-      <BusinessFilter />
-
       {/* Header */}
       <div className="newsletter-list-header">
         <div>

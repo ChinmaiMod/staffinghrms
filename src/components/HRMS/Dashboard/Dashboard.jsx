@@ -11,7 +11,6 @@ import {
   ArrowTrendingDownIcon,
 } from '@heroicons/react/24/outline'
 import LoadingSpinner from '../../Shared/LoadingSpinner'
-import BusinessFilter from '../../Shared/BusinessFilter'
 import './Dashboard.css'
 
 /**
@@ -78,9 +77,6 @@ function Dashboard() {
 
   return (
     <div className="dashboard-container">
-      {/* Business Filter */}
-      <BusinessFilter />
-
       {/* Welcome Section */}
       <div className="dashboard-welcome">
         <div className="welcome-left">

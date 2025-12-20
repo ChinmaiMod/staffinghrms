@@ -14,7 +14,6 @@ import { supabase } from '../../../api/supabaseClient'
 import { useTenant } from '../../../contexts/TenantProvider'
 import { useAuth } from '../../../contexts/AuthProvider'
 import LoadingSpinner from '../../Shared/LoadingSpinner'
-import BusinessFilter from '../../Shared/BusinessFilter'
 import { useDebounce } from '../../../utils/debounce'
 import './VendorList.css'
 
@@ -215,7 +214,6 @@ function VendorList({ testMode = false }) {
 
   return (
     <div className="vendor-list-container">
-      <BusinessFilter />
       <div className="vendor-list-header">
         <div>
           <h1 className="page-title">Vendor Management</h1>

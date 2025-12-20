@@ -3,7 +3,6 @@ import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../../../api/supabaseClient'
 import { useTenant } from '../../../contexts/TenantProvider'
 import LoadingSpinner from '../../Shared/LoadingSpinner'
-import BusinessFilter from '../../Shared/BusinessFilter'
 import { useDebounce } from '../../../utils/debounce'
 import {
   MagnifyingGlassIcon,
@@ -318,9 +317,6 @@ function EmployeeList({ testMode = false }) {
 
   return (
     <div className="employee-list-container">
-      {/* Business Filter */}
-      <BusinessFilter />
-
       {/* Bulk Actions Bar */}
       {selectedRows.length > 0 && (
         <div className="bulk-actions-bar">
