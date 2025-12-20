@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "npx vite build",
     "preview": "vite preview",
     "test": "vitest",
     "test:ui": "vitest --ui",
@@ -19,6 +19,7 @@
     "@vitejs/plugin-react": "^5.1.2",
     "jsdom": "^27.3.0",
     "tdd-guard-vitest": "^0.1.6",
+    "vite": "^5.4.11",
     "vitest": "^4.0.16"
   },
   "dependencies": {
