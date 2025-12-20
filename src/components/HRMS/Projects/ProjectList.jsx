@@ -14,6 +14,7 @@ import { supabase } from '../../../api/supabaseClient'
 import { useTenant } from '../../../contexts/TenantProvider'
 import { useAuth } from '../../../contexts/AuthProvider'
 import LoadingSpinner from '../../Shared/LoadingSpinner'
+import BusinessFilter from '../../Shared/BusinessFilter'
 import './ProjectList.css'
 
 // Project status configuration with colors
@@ -50,6 +51,11 @@ function ProjectList({ testMode = false }) {
   const [currentPage, setCurrentPage] = useState(1)
   const [rowsPerPage] = useState(25)
   const [totalCount, setTotalCount] = useState(0)
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [statusFilter, lcaOnlyFilter, employeeFilter, clientFilter, searchQuery])
 
   useEffect(() => {
     if (testMode) {
@@ -280,6 +286,7 @@ function ProjectList({ testMode = false }) {
 
   return (
     <div className="project-list-container">
+      <BusinessFilter />
       <div className="project-list-header">
         <div>
           <h1 className="page-title">Employee Projects</h1>

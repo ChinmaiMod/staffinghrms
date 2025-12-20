@@ -1,7 +1,9 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { supabase } from '../../../api/supabaseClient'
 import { useTenant } from '../../../contexts/TenantProvider'
 import LoadingSpinner from '../../Shared/LoadingSpinner'
+import BusinessFilter from '../../Shared/BusinessFilter'
 import {
   MagnifyingGlassIcon,
   FunnelIcon,
@@ -47,11 +49,7 @@ const STATUS_CONFIG = {
  */
 // Removed duplicate EmployeeList definition. Use the correct one below.
 function EmployeeList({ testMode = false }) {
-  
-
-  // TEMP FIX: Mock selectedBusiness for testMode or if not provided
-  // TODO: Replace with context or prop as needed
-  const selectedBusiness = null;
+  const { tenant, selectedBusiness } = useTenant()
 
   // Core data state
   const [employees, setEmployees] = useState([])
@@ -79,10 +77,17 @@ function EmployeeList({ testMode = false }) {
   // Mock departments for filters
   const departments = ['Engineering', 'Sales', 'HR', 'Finance', 'Marketing', 'Operations', 'Healthcare']
 
+  // Reset pagination when filters change
   useEffect(() => {
-    fetchEmployees()
+    setCurrentPage(1)
+  }, [searchQuery, selectedTypes, selectedStatuses, selectedDepartment])
+
+  useEffect(() => {
+    if (!testMode) {
+      fetchEmployees()
+    }
     // eslint-disable-next-line
-  }, [selectedBusiness])
+  }, [tenant?.tenant_id, selectedBusiness?.business_id])
 
   const fetchEmployees = async () => {
     try {
@@ -107,41 +112,108 @@ function EmployeeList({ testMode = false }) {
         setLoading(false)
         return
       }
-      // TODO: Replace with actual Supabase query
-      // const { data, error } = await supabase
-      //   .from('hrms_employees')
-      //   .select(`
-      //     *,
-      //     department:departments(department_name),
-      //     projects:hrms_projects(count),
-      //     compliance:hrms_compliance_items(count)
-      //   `)
-      //   .eq('tenant_id', tenant?.id)
-      //   .eq('business_id', selectedBusiness?.id || null)
-      //   .order('created_at', { ascending: false })
-      setLoading(true)
-      setTimeout(() => {
-        setEmployees([
-          {
-            id: 'emp-001',
-            employee_code: 'IES00001',
-            first_name: 'John',
-            last_name: 'Smith',
-            email: 'john.smith@company.com',
-            avatar_url: null,
-            employee_type: 'it_usa',
-            employment_status: 'active',
-            department: 'Engineering',
-            start_date: '2023-03-15',
-            active_projects: 2,
-            compliance_pending: 0
-          }
-        ])
-        setError(null)
+
+      if (!tenant?.tenant_id) {
+        setError('Tenant not available')
         setLoading(false)
-      }, 500)
+        return
+      }
+
+      setLoading(true)
+      setError(null)
+
+      // Build query for employees
+      let query = supabase
+        .from('hrms_employees')
+        .select(`
+          employee_id,
+          employee_code,
+          first_name,
+          last_name,
+          email,
+          employee_type,
+          employment_status,
+          department,
+          start_date,
+          is_active
+        `, { count: 'exact' })
+        .eq('tenant_id', tenant.tenant_id)
+        .is('deleted_at', null)
+        .order('created_at', { ascending: false })
+
+      // Filter by business if selected
+      if (selectedBusiness?.business_id) {
+        query = query.eq('business_id', selectedBusiness.business_id)
+      }
+
+      const { data: employeesData, error: queryError, count } = await query
+
+      if (queryError) throw queryError
+
+      if (!employeesData || employeesData.length === 0) {
+        setEmployees([])
+        setLoading(false)
+        return
+      }
+
+      // Get employee IDs for counting projects and compliance
+      const employeeIds = employeesData.map(emp => emp.employee_id)
+
+      // Fetch active projects count for each employee
+      const { data: projectsData } = await supabase
+        .from('hrms_projects')
+        .select('employee_id')
+        .in('employee_id', employeeIds)
+        .eq('project_status', 'active')
+        .eq('tenant_id', tenant.tenant_id)
+
+      // Fetch pending/overdue compliance items count for each employee
+      const { data: complianceData } = await supabase
+        .from('hrms_compliance_items')
+        .select('employee_id')
+        .in('employee_id', employeeIds)
+        .in('compliance_status', ['pending', 'overdue'])
+        .eq('tenant_id', tenant.tenant_id)
+
+      // Count projects and compliance items per employee
+      const projectsCount = {}
+      const complianceCount = {}
+
+      if (projectsData) {
+        projectsData.forEach(project => {
+          projectsCount[project.employee_id] = (projectsCount[project.employee_id] || 0) + 1
+        })
+      }
+
+      if (complianceData) {
+        complianceData.forEach(item => {
+          complianceCount[item.employee_id] = (complianceCount[item.employee_id] || 0) + 1
+        })
+      }
+
+      // Transform data to match component expectations
+      const transformedEmployees = employeesData.map((emp) => ({
+        id: emp.employee_id,
+        employee_id: emp.employee_id,
+        employee_code: emp.employee_code,
+        first_name: emp.first_name,
+        last_name: emp.last_name,
+        email: emp.email,
+        avatar_url: null, // TODO: Add avatar_url field if available
+        employee_type: emp.employee_type,
+        employment_status: emp.employment_status,
+        department: emp.department || '',
+        start_date: emp.start_date,
+        active_projects: projectsCount[emp.employee_id] || 0,
+        compliance_pending: complianceCount[emp.employee_id] || 0
+      }))
+
+      setEmployees(transformedEmployees)
+      setError(null)
+      setLoading(false)
     } catch (err) {
-      setError('Failed to load employees')
+      console.error('Error fetching employees:', err)
+      setError(err.message || 'Failed to load employees')
       setLoading(false)
     }
   }
@@ -244,6 +316,9 @@ function EmployeeList({ testMode = false }) {
 
   return (
     <div className="employee-list-container">
+      {/* Business Filter */}
+      <BusinessFilter />
+
       {/* Bulk Actions Bar */}
       {selectedRows.length > 0 && (
         <div className="bulk-actions-bar">

@@ -16,6 +16,7 @@ import { supabase } from '../../../api/supabaseClient'
 import { useTenant } from '../../../contexts/TenantProvider'
 import { useAuth } from '../../../contexts/AuthProvider'
 import LoadingSpinner from '../../Shared/LoadingSpinner'
+import BusinessFilter from '../../Shared/BusinessFilter'
 import './DocumentList.css'
 
 /**
@@ -45,6 +46,11 @@ function DocumentList() {
 
   // Dropdown state
   const [openActionMenu, setOpenActionMenu] = useState(null)
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchQuery, entityTypeFilter, documentTypeFilter, statusFilter, expiryFilter])
 
   useEffect(() => {
     if (tenant?.tenant_id) {
@@ -221,81 +227,153 @@ function DocumentList() {
   const enrichDocumentsWithEntities = async (documents) => {
     if (!documents || documents.length === 0) return documents
 
-    // Group documents by entity type
-    const employeeDocs = documents.filter(doc => doc.entity_type === 'employee')
-    const projectDocs = documents.filter(doc => doc.entity_type === 'project')
+    try {
+      // Group documents by entity type
+      const employeeDocs = documents.filter(doc => doc.entity_type === 'employee')
+      const projectDocs = documents.filter(doc => doc.entity_type === 'project')
 
-    // Fetch employee data for employee documents
-    const employeeIds = [...new Set(employeeDocs.map(doc => doc.entity_id))]
-    let employeesMap = {}
-    if (employeeIds.length > 0) {
-      const { data: employees } = await supabase
-        .from('hrms_employees')
-        .select('employee_id, first_name, last_name, employee_code')
-        .in('employee_id', employeeIds)
-      
-      if (employees) {
-        employeesMap = employees.reduce((acc, emp) => {
-          acc[emp.employee_id] = emp
-          return acc
-        }, {})
+      // Fetch employee data for employee documents
+      const employeeIds = [...new Set(employeeDocs.map(doc => doc.entity_id))]
+      let employeesMap = {}
+      if (employeeIds.length > 0) {
+        try {
+          const { data: employees, error: empError } = await supabase
+            .from('hrms_employees')
+            .select('employee_id, first_name, last_name, employee_code')
+            .in('employee_id', employeeIds)
+          
+          if (empError) {
+            console.error('Error fetching employees for documents:', empError)
+          } else if (employees) {
+            employeesMap = employees.reduce((acc, emp) => {
+              acc[emp.employee_id] = emp
+              return acc
+            }, {})
+          }
+        } catch (err) {
+          console.error('Error enriching employee documents:', err)
+          // Continue with empty map - documents will show without employee info
+        }
       }
+
+      // Fetch project data for project documents
+      const projectIds = [...new Set(projectDocs.map(doc => doc.entity_id))]
+      let projectsMap = {}
+      if (projectIds.length > 0) {
+        try {
+          const { data: projects, error: projError } = await supabase
+            .from('hrms_projects')
+            .select('project_id, project_name, project_code')
+            .in('project_id', projectIds)
+          
+          if (projError) {
+            console.error('Error fetching projects for documents:', projError)
+          } else if (projects) {
+            projectsMap = projects.reduce((acc, proj) => {
+              acc[proj.project_id] = proj
+              return acc
+            }, {})
+          }
+        } catch (err) {
+          console.error('Error enriching project documents:', err)
+          // Continue with empty map - documents will show without project info
+        }
+      }
+
+      // Enrich documents with related entity data
+      return documents.map(doc => {
+        if (doc.entity_type === 'employee' && employeesMap[doc.entity_id]) {
+          return { ...doc, employee: employeesMap[doc.entity_id] }
+        }
+        if (doc.entity_type === 'project' && projectsMap[doc.entity_id]) {
+          return { ...doc, project: projectsMap[doc.entity_id] }
+        }
+        return doc
+      })
+    } catch (err) {
+      console.error('Error enriching documents:', err)
+      // Return documents without enrichment rather than failing completely
+      return documents
     }
-
-    // Fetch project data for project documents
-    const projectIds = [...new Set(projectDocs.map(doc => doc.entity_id))]
-    let projectsMap = {}
-    if (projectIds.length > 0) {
-      const { data: projects } = await supabase
-        .from('hrms_projects')
-        .select('project_id, project_name, project_code')
-        .in('project_id', projectIds)
-      
-      if (projects) {
-        projectsMap = projects.reduce((acc, proj) => {
-          acc[proj.project_id] = proj
-          return acc
-        }, {})
-      }
-    }
-
-    // Enrich documents with related entity data
-    return documents.map(doc => {
-      if (doc.entity_type === 'employee' && employeesMap[doc.entity_id]) {
-        return { ...doc, employee: employeesMap[doc.entity_id] }
-      }
-      if (doc.entity_type === 'project' && projectsMap[doc.entity_id]) {
-        return { ...doc, project: projectsMap[doc.entity_id] }
-      }
-      return doc
-    })
   }
 
   const handleDownload = async (document) => {
     try {
-      // Extract bucket and path from file_path
-      // Assuming file_path format: "bucket-name/path/to/file.pdf"
-      const [bucket, ...pathParts] = document.file_path.split('/')
-      const filePath = pathParts.join('/')
+      if (!document.file_path) {
+        alert('File path not available')
+        return
+      }
+
+      // Handle different file_path formats:
+      // Format 1: "bucket-name/path/to/file.pdf"
+      // Format 2: "/bucket-name/path/to/file.pdf"
+      // Format 3: "path/to/file.pdf" (assumes default bucket)
+      let bucket, filePath
+
+      const pathParts = document.file_path.split('/').filter(part => part.length > 0)
+      
+      if (pathParts.length === 0) {
+        throw new Error('Invalid file path format')
+      }
+
+      // Check if first part looks like a bucket name (no dots, typically lowercase)
+      // If path starts with known bucket pattern or has storage indicator
+      if (pathParts.length > 1) {
+        // Assume first part is bucket if we have multiple parts
+        bucket = pathParts[0]
+        filePath = pathParts.slice(1).join('/')
+      } else {
+        // Single part - might be just the file path, try default bucket or use storage bucket
+        // For now, assume it's a full path in a default bucket
+        // You may need to adjust this based on your storage setup
+        bucket = 'documents' // Default bucket name - adjust as needed
+        filePath = pathParts[0]
+      }
+
+      if (!bucket || !filePath) {
+        throw new Error('Could not parse file path')
+      }
 
       const { data, error: downloadError } = await supabase.storage
         .from(bucket)
         .download(filePath)
 
-      if (downloadError) throw downloadError
+      if (downloadError) {
+        // Try alternative: maybe file_path is already the full path
+        if (downloadError.message?.includes('not found') || downloadError.message?.includes('Bucket')) {
+          // Try treating entire path as file path in default bucket
+          const { data: altData, error: altError } = await supabase.storage
+            .from('documents')
+            .download(document.file_path)
+          
+          if (altError) throw altError
+          
+          // Use alternative data
+          const url = window.URL.createObjectURL(altData)
+          const a = document.createElement('a')
+          a.href = url
+          a.download = document.file_name || 'download'
+          document.body.appendChild(a)
+          a.click()
+          window.URL.revokeObjectURL(url)
+          document.body.removeChild(a)
+          return
+        }
+        throw downloadError
+      }
 
       // Create download link
       const url = window.URL.createObjectURL(data)
       const a = document.createElement('a')
       a.href = url
-      a.download = document.file_name
+      a.download = document.file_name || 'download'
       document.body.appendChild(a)
       a.click()
       window.URL.revokeObjectURL(url)
       document.body.removeChild(a)
     } catch (err) {
       console.error('Error downloading document:', err)
-      alert('Failed to download document')
+      alert(`Failed to download document: ${err.message || 'Unknown error'}`)
     }
   }
 
@@ -316,6 +394,9 @@ function DocumentList() {
 
   return (
     <div className="document-list" data-testid="document-list">
+      {/* Business Filter */}
+      <BusinessFilter />
+
       {/* Header */}
       <div className="document-list-header">
         <div>

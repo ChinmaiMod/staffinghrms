@@ -16,7 +16,7 @@ import './SuggestionForm.css'
 function SuggestionForm({ testMode = false }) {
   const { suggestionId } = useParams()
   const navigate = useNavigate()
-  const { tenant } = useTenant()
+  const { tenant, selectedBusiness } = useTenant()
   const { user } = useAuth()
   const isEditMode = !!suggestionId
 
@@ -134,6 +134,7 @@ function SuggestionForm({ testMode = false }) {
     try {
       const suggestionData = {
         tenant_id: tenant.tenant_id,
+        business_id: selectedBusiness?.business_id || null,
         submitted_by_user_id: user.id,
         suggestion_type: formData.suggestion_type,
         title: formData.title.trim(),

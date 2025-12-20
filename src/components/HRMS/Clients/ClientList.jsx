@@ -13,6 +13,7 @@ import { supabase } from '../../../api/supabaseClient'
 import { useTenant } from '../../../contexts/TenantProvider'
 import { useAuth } from '../../../contexts/AuthProvider'
 import LoadingSpinner from '../../Shared/LoadingSpinner'
+import BusinessFilter from '../../Shared/BusinessFilter'
 import './ClientList.css'
 
 /**
@@ -41,6 +42,11 @@ function ClientList() {
 
   // Dropdown state
   const [openActionMenu, setOpenActionMenu] = useState(null)
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchQuery, typeFilter, industryFilter, statusFilter])
 
   useEffect(() => {
     if (tenant?.tenant_id) {
@@ -159,6 +165,7 @@ function ClientList() {
 
   return (
     <div className="client-list-container">
+      <BusinessFilter />
       <div className="client-list-header">
         <div>
           <h1 className="page-title">Client Management</h1>

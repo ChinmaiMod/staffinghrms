@@ -10,6 +10,7 @@ import {
 import { supabase } from '../../../api/supabaseClient'
 import { useTenant } from '../../../contexts/TenantProvider'
 import LoadingSpinner from '../../Shared/LoadingSpinner'
+import BusinessFilter from '../../Shared/BusinessFilter'
 import './TimesheetList.css'
 
 // Timesheet status configuration with colors
@@ -97,6 +98,11 @@ function TimesheetList({ testMode = false }) {
     }
   }, [periodType])
 
+  // Reset pagination when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [statusFilter, employeeFilter, projectFilter, startDate, endDate, searchQuery])
+
   useEffect(() => {
     if (testMode) {
       // Mock data for testing
@@ -132,7 +138,7 @@ function TimesheetList({ testMode = false }) {
       fetchEmployees()
       fetchProjects()
     }
-  }, [tenant?.tenant_id, selectedBusiness?.business_id, statusFilter, employeeFilter, projectFilter, startDate, endDate, currentPage, testMode])
+  }, [tenant?.tenant_id, selectedBusiness?.business_id, statusFilter, employeeFilter, projectFilter, startDate, endDate, searchQuery, currentPage, testMode])
 
   const fetchTimesheets = async () => {
     try {
@@ -176,12 +182,12 @@ function TimesheetList({ testMode = false }) {
         query = query.eq('business_id', selectedBusiness.business_id)
       }
 
-      // Filter by date range
+      // Filter by date range - find timesheets that overlap with the selected range
       if (startDate) {
-        query = query.gte('period_end_date', startDate)
+        query = query.gte('period_start_date', startDate)
       }
       if (endDate) {
-        query = query.lte('period_start_date', endDate)
+        query = query.lte('period_end_date', endDate)
       }
 
       // Filter by status
@@ -341,6 +347,7 @@ function TimesheetList({ testMode = false }) {
 
   return (
     <div className="timesheet-list-container">
+      <BusinessFilter />
       <div className="timesheet-list-header">
         <div>
           <h1 className="page-title">Timesheets</h1>

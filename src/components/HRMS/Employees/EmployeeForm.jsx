@@ -430,17 +430,18 @@ function EmployeeForm({ testMode = false }) {
       setError(null)
       
       // TODO: Replace with actual Supabase mutation
-      // const payload = {
-      //   ...formData,
-      //   tenant_id: tenant?.id,
-      //   business_id: selectedBusiness?.id || null,
-      //   ...(isEditMode 
-      //     ? { updated_by: profile?.id } 
-      //     : { created_by: profile?.id, updated_by: profile?.id }
-      //   )
-      // }
+      const payload = {
+        ...formData,
+        tenant_id: tenant?.tenant_id,
+        business_id: selectedBusiness?.business_id || null,
+        ...(isEditMode 
+          ? { updated_by: user?.id } 
+          : { created_by: user?.id, updated_by: user?.id }
+        )
+      }
       
-      // Simulate API call
+      // Simulate API call - TODO: Replace with actual Supabase insert/update
+      console.log('Employee payload:', payload)
       await new Promise(resolve => setTimeout(resolve, 1000))
       
       // Navigate back to employee list

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useTenant } from '../../../contexts/TenantProvider'
 import LoadingSpinner from '../../Shared/LoadingSpinner'
+import BusinessFilter from '../../Shared/BusinessFilter'
 import {
   ExclamationTriangleIcon,
   CheckCircleIcon,
@@ -99,6 +100,9 @@ function ComplianceDashboard() {
 
   return (
     <div className="compliance-dashboard-container">
+      {/* Business Filter */}
+      <BusinessFilter />
+
       {/* Page Header */}
       <div className="compliance-header">
         <div>

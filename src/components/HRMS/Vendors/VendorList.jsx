@@ -14,6 +14,7 @@ import { supabase } from '../../../api/supabaseClient'
 import { useTenant } from '../../../contexts/TenantProvider'
 import { useAuth } from '../../../contexts/AuthProvider'
 import LoadingSpinner from '../../Shared/LoadingSpinner'
+import BusinessFilter from '../../Shared/BusinessFilter'
 import './VendorList.css'
 
 // Vendor type configuration with colors
@@ -49,6 +50,11 @@ function VendorList({ testMode = false }) {
 
   // Dropdown state
   const [openActionMenu, setOpenActionMenu] = useState(null)
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchQuery, typeFilter, statusFilter, paymentTermsFilter])
 
   useEffect(() => {
     if (testMode) {
@@ -207,6 +213,7 @@ function VendorList({ testMode = false }) {
 
   return (
     <div className="vendor-list-container">
+      <BusinessFilter />
       <div className="vendor-list-header">
         <div>
           <h1 className="page-title">Vendor Management</h1>

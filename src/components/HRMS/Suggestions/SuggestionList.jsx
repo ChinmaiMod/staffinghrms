@@ -4,6 +4,8 @@ import { supabase } from '../../../api/supabaseClient'
 import { useTenant } from '../../../contexts/TenantProvider'
 import { useAuth } from '../../../contexts/AuthProvider'
 import LoadingSpinner from '../../Shared/LoadingSpinner'
+import BusinessFilter from '../../Shared/BusinessFilter'
+import { useDebounce } from '../../../utils/debounce'
 import './SuggestionList.css'
 
 /**
@@ -12,7 +14,7 @@ import './SuggestionList.css'
  * Based on UI_DESIGN_DOCS/15_SUGGESTIONS_IDEAS.md
  */
 function SuggestionList() {
-  const { tenant } = useTenant()
+  const { tenant, selectedBusiness } = useTenant()
   const { user } = useAuth()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -24,14 +26,20 @@ function SuggestionList() {
   const [typeFilter, setTypeFilter] = useState('all')
   const [priorityFilter, setPriorityFilter] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
+  const debouncedSearchQuery = useDebounce(searchQuery, 300)
   const [currentPage, setCurrentPage] = useState(1)
   const rowsPerPage = 10
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [statusFilter, typeFilter, priorityFilter, debouncedSearchQuery])
 
   useEffect(() => {
     if (tenant?.tenant_id) {
       fetchSuggestions()
     }
-  }, [tenant?.tenant_id, statusFilter, typeFilter, priorityFilter, searchQuery, currentPage])
+  }, [tenant?.tenant_id, selectedBusiness?.business_id, statusFilter, typeFilter, priorityFilter, debouncedSearchQuery, currentPage])
 
   const fetchSuggestions = async () => {
     try {
@@ -63,6 +71,11 @@ function SuggestionList() {
         .eq('tenant_id', tenant.tenant_id)
         .order('created_at', { ascending: false })
 
+      // Apply business filter
+      if (selectedBusiness?.business_id) {
+        query = query.eq('business_id', selectedBusiness.business_id)
+      }
+
       // Apply filters
       if (statusFilter !== 'all') {
         query = query.eq('status', statusFilter)
@@ -77,8 +90,8 @@ function SuggestionList() {
       }
 
       // Search filter
-      if (searchQuery) {
-        query = query.or(`title.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`)
+      if (debouncedSearchQuery) {
+        query = query.or(`title.ilike.%${debouncedSearchQuery}%,description.ilike.%${debouncedSearchQuery}%`)
       }
 
       // Pagination
@@ -147,6 +160,9 @@ function SuggestionList() {
 
   return (
     <div className="suggestion-list-container">
+      {/* Business Filter */}
+      <BusinessFilter />
+
       <div className="suggestion-list-header">
         <div>
           <h1 className="page-title">💡 Suggestions & Ideas</h1>

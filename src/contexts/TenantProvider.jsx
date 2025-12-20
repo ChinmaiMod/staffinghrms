@@ -15,6 +15,7 @@ export const useTenant = () => {
 
 const TENANT_DATA_STORAGE_KEY = 'hrms::tenant_data'
 const SUBSCRIPTION_STORAGE_KEY = 'hrms::tenant_subscription'
+const SELECTED_BUSINESS_STORAGE_KEY = 'hrms::selected_business'
 
 const safeParse = (value) => {
   try {
@@ -61,6 +62,13 @@ export function TenantProvider({ children }) {
   const [tenant, setTenant] = useState(initialState.tenant)
   const [subscription, setSubscription] = useState(initialState.subscription)
   const [loading, setLoading] = useState(true)
+  const [businesses, setBusinesses] = useState([])
+  const [selectedBusiness, setSelectedBusinessState] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return safeParse(window.localStorage.getItem(SELECTED_BUSINESS_STORAGE_KEY))
+    }
+    return null
+  })
 
   const isMountedRef = useRef(true)
   const abortControllerRef = useRef(null)
@@ -77,11 +85,17 @@ export function TenantProvider({ children }) {
     if (effectiveTenantId) {
       abortControllerRef.current = new AbortController()
       fetchTenantData(effectiveTenantId, abortControllerRef.current.signal)
+      fetchBusinesses(effectiveTenantId, abortControllerRef.current.signal)
     } else {
       if (isMountedRef.current) {
         setTenant(null)
         setSubscription(null)
+        setBusinesses([])
+        setSelectedBusinessState(null)
         persistTenantState(null, null)
+        if (typeof window !== 'undefined') {
+          window.localStorage.removeItem(SELECTED_BUSINESS_STORAGE_KEY)
+        }
         setLoading(false)
       }
     }
@@ -146,6 +160,49 @@ export function TenantProvider({ children }) {
     }
   }
 
+  const fetchBusinesses = async (tenantId, signal) => {
+    try {
+      const { data, error } = await supabase
+        .from('businesses')
+        .select('*')
+        .eq('tenant_id', tenantId)
+        .eq('is_active', true)
+        .order('business_name', { ascending: true })
+
+      if (error) throw error
+
+      if (isMountedRef.current && !signal?.aborted) {
+        setBusinesses(data || [])
+        
+        // If no business is selected but businesses exist, try to restore from localStorage
+        if (!selectedBusiness && data && data.length > 0) {
+          const storedBusiness = safeParse(window.localStorage.getItem(SELECTED_BUSINESS_STORAGE_KEY))
+          if (storedBusiness && data.find(b => b.business_id === storedBusiness.business_id)) {
+            setSelectedBusinessState(storedBusiness)
+          }
+        }
+      }
+    } catch (error) {
+      if (error.name !== 'AbortError') {
+        logger.error('Error fetching businesses:', error)
+      }
+      if (isMountedRef.current && !signal?.aborted) {
+        setBusinesses([])
+      }
+    }
+  }
+
+  const setSelectedBusiness = (business) => {
+    setSelectedBusinessState(business)
+    if (typeof window !== 'undefined') {
+      if (business) {
+        window.localStorage.setItem(SELECTED_BUSINESS_STORAGE_KEY, JSON.stringify(business))
+      } else {
+        window.localStorage.removeItem(SELECTED_BUSINESS_STORAGE_KEY)
+      }
+    }
+  }
+
   const refreshTenantData = () => {
     if (effectiveTenantId) {
       if (abortControllerRef.current) {
@@ -183,6 +240,14 @@ export function TenantProvider({ children }) {
     hasActivePlan,
     getPlanName,
     setTenantOverride,
+    businesses,
+    selectedBusiness,
+    setSelectedBusiness,
+    refreshBusinesses: () => {
+      if (effectiveTenantId) {
+        fetchBusinesses(effectiveTenantId, null)
+      }
+    },
   }
 
   return <TenantContext.Provider value={value}>{children}</TenantContext.Provider>

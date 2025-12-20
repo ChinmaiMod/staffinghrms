@@ -15,6 +15,7 @@ import { supabase } from '../../../api/supabaseClient'
 import { useTenant } from '../../../contexts/TenantProvider'
 import { useAuth } from '../../../contexts/AuthProvider'
 import LoadingSpinner from '../../Shared/LoadingSpinner'
+import BusinessFilter from '../../Shared/BusinessFilter'
 import './NewsletterList.css'
 
 // Newsletter status configuration with colors
@@ -68,7 +69,7 @@ function NewsletterList({ testMode = false }) {
     if (tenant?.tenant_id && user?.id) {
       fetchNewsletters()
     }
-  }, [tenant?.tenant_id, selectedBusiness?.business_id, user?.id, statusFilter, currentPage, testMode])
+  }, [tenant?.tenant_id, selectedBusiness?.business_id, user?.id, statusFilter, searchQuery, currentPage, testMode])
 
   const fetchNewsletters = async () => {
     try {
@@ -87,6 +88,11 @@ function NewsletterList({ testMode = false }) {
         .select('*', { count: 'exact' })
         .eq('tenant_id', tenant.tenant_id)
         .order('created_at', { ascending: false })
+
+      // Apply business filter
+      if (selectedBusiness?.business_id) {
+        query = query.eq('business_id', selectedBusiness.business_id)
+      }
 
       // Apply status filter
       if (statusFilter !== 'all') {
@@ -115,6 +121,11 @@ function NewsletterList({ testMode = false }) {
     }
   }
 
+  // Reset pagination when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [statusFilter, searchQuery])
+
   const formatDate = (dateString) => {
     if (!dateString) return ''
     const date = new Date(dateString)
@@ -142,15 +153,8 @@ function NewsletterList({ testMode = false }) {
     )
   }
 
-  const filteredNewsletters = useMemo(() => {
-    if (!searchQuery.trim()) return newsletters
-    const query = searchQuery.toLowerCase()
-    return newsletters.filter(
-      (nl) =>
-        nl.title?.toLowerCase().includes(query) ||
-        nl.subject_line?.toLowerCase().includes(query)
-    )
-  }, [newsletters, searchQuery])
+  // Note: Search filtering is done server-side, so no client-side filtering needed
+  const filteredNewsletters = newsletters
 
   const totalPages = Math.ceil(totalCount / rowsPerPage)
 
@@ -160,6 +164,9 @@ function NewsletterList({ testMode = false }) {
 
   return (
     <div className="newsletter-list" data-testid="newsletter-list">
+      {/* Business Filter */}
+      <BusinessFilter />
+
       {/* Header */}
       <div className="newsletter-list-header">
         <div>
