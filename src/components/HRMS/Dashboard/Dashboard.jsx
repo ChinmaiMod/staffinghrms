@@ -97,7 +97,7 @@ function Dashboard() {
           label="Total Employees"
           trend={stats.totalEmployees.change}
           trendPercent={stats.totalEmployees.changePercent}
-          secondary={`+${stats.totalEmployees.change} added this ${stats.totalEmployees.period}`}
+          secondary={`↑ All time`}
         />
         
         <StatCard
@@ -108,7 +108,7 @@ function Dashboard() {
           label="Active Projects"
           trend={stats.activeProjects.change}
           trendPercent={stats.activeProjects.changePercent}
-          secondary={`+${stats.activeProjects.change} this ${stats.activeProjects.period}`}
+          secondary={`↑ +${stats.activeProjects.change} this ${stats.activeProjects.period}`}
         />
         
         <StatCard
@@ -127,7 +127,8 @@ function Dashboard() {
           value={stats.compliancePending.count}
           label="Compliance Pending"
           trend={stats.compliancePending.overdue > 0 ? -stats.compliancePending.overdue : 0}
-          secondary={stats.compliancePending.overdue > 0 ? `⚠️ ${stats.compliancePending.overdue} overdue` : 'All on track'}
+          secondary={stats.compliancePending.overdue > 0 ? `▲ ${stats.compliancePending.overdue} overdue` : 'Different stages'}
+          highlighted={true}
         />
       </div>
 
@@ -199,13 +200,14 @@ function StatCard({
   label, 
   trend, 
   trendPercent, 
-  secondary 
+  secondary,
+  highlighted
 }) {
   const hasPositiveTrend = trend && trend > 0
   const hasNegativeTrend = trend && trend < 0
   
   return (
-    <div className="stat-card">
+    <div className={`stat-card ${highlighted ? 'highlighted' : ''}`}>
       <div className="stat-card-header">
         <div className="stat-icon-container" style={{ backgroundColor: iconBg }}>
           <Icon className="stat-icon" style={{ color: iconColor }} />
