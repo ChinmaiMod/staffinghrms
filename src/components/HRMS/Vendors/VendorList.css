@@ -66,9 +66,10 @@
 
 .filters-bar {
   display: flex;
-  gap: 12px;
+  align-items: center;
+  gap: var(--space-3, 12px);
   margin-bottom: var(--space-4, 16px);
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
 .search-box {
@@ -89,16 +90,18 @@
 
 .search-input {
   width: 100%;
-  padding: 10px 12px 10px 40px;
-  border: 1px solid #E5E7EB;
-  border-radius: 8px;
-  font-size: 14px;
+  padding: var(--space-2, 8px) var(--space-3, 12px) var(--space-2, 8px) var(--space-10, 40px);
+  border: 1px solid var(--color-gray-200, #E5E7EB);
+  border-radius: var(--radius-lg, 8px);
+  font-size: var(--text-base, 14px);
+  transition: all var(--transition-fast, 150ms);
 }
 
-.search-input:focus {
+.search-input:focus,
+.search-input:focus-visible {
   outline: none;
-  border-color: #3B82F6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: var(--color-primary, #3B82F6);
+  box-shadow: var(--shadow-focus, 0 0 0 3px rgba(59, 130, 246, 0.1));
 }
 
 .search-shortcut {
@@ -115,21 +118,32 @@
 
 .filter-group {
   display: flex;
-  gap: 8px;
+  align-items: center;
+  gap: var(--space-2, 8px);
+  flex-shrink: 0;
 }
 
 .filter-select {
-  padding: 10px 12px;
-  border: 1px solid #E5E7EB;
-  border-radius: 8px;
-  font-size: 14px;
+  padding: var(--space-2, 8px) var(--space-8, 32px) var(--space-2, 8px) var(--space-3, 12px);
+  border: 1px solid var(--color-gray-200, #E5E7EB);
+  border-radius: var(--radius-lg, 8px);
+  font-size: var(--text-base, 14px);
   background: white;
   cursor: pointer;
+  transition: all var(--transition-fast, 150ms);
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%236b7280'%3E%3Cpath fill-rule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clip-rule='evenodd'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 16px;
+  min-width: 140px;
 }
 
-.filter-select:focus {
+.filter-select:focus,
+.filter-select:focus-visible {
   outline: none;
-  border-color: #3B82F6;
+  border-color: var(--color-primary, #3B82F6);
+  box-shadow: var(--shadow-focus, 0 0 0 3px rgba(59, 130, 246, 0.1));
 }
 
 .vendor-table-wrapper {
