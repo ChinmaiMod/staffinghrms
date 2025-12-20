@@ -128,9 +128,10 @@ The HRMS Dashboard is the primary landing page after login, providing at-a-glanc
 | **Border** | 1px solid `#E5E7EB` |
 | **Border Radius** | 12px |
 | **Padding** | 20px |
-| **Shadow** | `shadow-sm` |
-| **Hover Shadow** | `shadow-md` |
+| **Shadow** | `0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06)` |
+| **Hover Shadow** | `0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06)` |
 | **Transition** | `box-shadow 200ms ease-in-out` |
+| **Optional Left Border** | 3px solid `#3B82F6` (for highlighted cards) |
 
 **Card Elements:**
 
@@ -139,9 +140,9 @@ The HRMS Dashboard is the primary landing page after login, providing at-a-glanc
 | **Icon Container** | 40×40px, rounded-lg, background varies by card |
 | **Icon** | 20px, color varies |
 | **Trend Indicator** | Top-right, Font: 12px, 500 weight, includes arrow |
-| **Main Number** | Font: 36px, 700 weight, `#1F2937` |
-| **Label** | Font: 14px, 500 weight, `#6B7280` |
-| **Secondary Text** | Font: 13px, 400 weight, `#9CA3AF` |
+| **Main Number** | Font: 32px, 700 weight, `#1F2937` |
+| **Label** | Font: 12px, 600 weight, `#6B7280`, uppercase, letter-spacing: 0.5px |
+| **Secondary Text** | Font: 12px, 400 weight, `#3B82F6` (blue) |
 
 **Card Configurations:**
 
@@ -156,10 +157,10 @@ The HRMS Dashboard is the primary landing page after login, providing at-a-glanc
 
 | Card | Value | Trend | Secondary |
 |------|-------|-------|-----------|
-| Total Employees | 156 | ↗ +8 (5.4%) | +8 added this month |
-| Active Projects | 89 | ↗ +3 (3.5%) | +3 this week |
+| Total Employees | 156 | ↗ +8 (5.4%) | ↑ All time |
+| Active Projects | 89 | ↗ +3 (3.5%) | ↑ +3 this week |
 | On Leave | 12 | - | 4 returning this week |
-| Compliance Pending | 23 | ⚠️ | 5 overdue |
+| Compliance Pending | 23 | ⚠️ | Different stages (with left blue border accent) |
 
 ---
 
@@ -193,6 +194,7 @@ The HRMS Dashboard is the primary landing page after login, providing at-a-glanc
 | **Border** | 1px solid `#E5E7EB` |
 | **Border Radius** | 12px |
 | **Padding** | 24px |
+| **Shadow** | `0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06)` |
 
 **Chart Configuration:**
 

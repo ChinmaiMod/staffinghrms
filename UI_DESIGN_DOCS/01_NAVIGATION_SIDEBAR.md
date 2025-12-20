@@ -508,8 +508,8 @@ Selected Item:
 #### Expanded State (Default on Desktop)
 ```
 Width: 256px
-Background: #FFFFFF
-Border Right: 1px solid #E5E7EB
+Background: #1E3A5F (Dark Blue)
+Border Right: 1px solid rgba(255, 255, 255, 0.1)
 Position: Fixed, left
 Top: 64px (below header)
 Height: calc(100vh - 64px)
@@ -587,14 +587,15 @@ Height: 44px
 Padding: 0 16px
 Display: flex, align-items: center
 Gap: 12px
-Font: 14px, 500 weight
-Color: #4B5563
+Font: 14px, 400 weight, 'Inter'
+Color: #FFFFFF
+Letter Spacing: 0.01em
 Border Radius: 6px
 Margin: 2px 8px
 
 Icon:
   Size: 20px
-  Color: #6B7280
+  Color: Varies by menu item (see Icon Color Reference below)
 
 Hover:
   Background: #F3F4F6
@@ -841,6 +842,10 @@ Arrow: 6px triangle pointing left
 ### Color Reference for Sidebar States
 
 | State | Background | Text | Icon |
+|-------|------------|------|------|
+| Default | Transparent | #FFFFFF | See Icon Color Reference above |
+| Hover | rgba(255, 255, 255, 0.1) | #FFFFFF | See Icon Color Reference above |
+| Active | #4A90E2 | #FFFFFF | #FFFFFF (all icons) |
 |-------|------------|------|------|
 | Default | Transparent | `#4B5563` | `#6B7280` |
 | Hover | `#F3F4F6` | `#374151` | `#374151` |
