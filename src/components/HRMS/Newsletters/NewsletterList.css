@@ -201,27 +201,27 @@
 .empty-state {
   grid-column: 1 / -1;
   text-align: center;
-  padding: 64px 24px;
+  padding: var(--space-16, 64px) var(--space-6, 24px);
 }
 
 .empty-icon {
-  width: 64px;
-  height: 64px;
-  color: #D1D5DB;
-  margin: 0 auto 16px;
+  width: var(--space-16, 64px);
+  height: var(--space-16, 64px);
+  color: var(--color-gray-300, #D1D5DB);
+  margin: 0 auto var(--space-4, 16px);
 }
 
 .empty-state h3 {
-  font-size: 20px;
-  font-weight: 600;
-  color: #111827;
-  margin: 0 0 8px 0;
+  font-size: var(--text-xl, 20px);
+  font-weight: var(--font-semibold, 600);
+  color: var(--color-gray-900, #111827);
+  margin: 0 0 var(--space-2, 8px) 0;
 }
 
 .empty-state p {
-  font-size: 14px;
-  color: #6B7280;
-  margin: 0 0 24px 0;
+  font-size: var(--text-base, 14px);
+  color: var(--color-gray-500, #6B7280);
+  margin: 0 0 var(--space-6, 24px) 0;
 }
 
 .pagination {
