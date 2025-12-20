@@ -169,6 +169,20 @@ function Sidebar({ collapsed, onToggle }) {
             }
 
             const Icon = item.icon
+            const getIconColor = (isActive) => {
+              if (isActive) return '#FFFFFF'
+              switch (item.id) {
+                case 'notifications':
+                  return '#FBBF24'
+                case 'suggestions':
+                  return '#FCD34D'
+                case 'issues':
+                  return '#10B981'
+                default:
+                  return '#FFFFFF'
+              }
+            }
+            
             return (
               <li key={item.id} className="sidebar-item">
                 <NavLink
@@ -180,8 +194,16 @@ function Sidebar({ collapsed, onToggle }) {
                   data-testid={`nav-${item.id}`}
                   data-icon={item.id}
                 >
-                  <Icon className="sidebar-icon" aria-hidden="true" />
-                  {!collapsed && <span className="sidebar-label">{item.label}</span>}
+                  {({ isActive }) => (
+                    <>
+                      <Icon 
+                        className="sidebar-icon" 
+                        aria-hidden="true"
+                        style={{ color: getIconColor(isActive) }}
+                      />
+                      {!collapsed && <span className="sidebar-label">{item.label}</span>}
+                    </>
+                  )}
                 </NavLink>
               </li>
             )

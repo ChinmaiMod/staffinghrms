@@ -180,46 +180,58 @@
   color: #FFFFFF;
 }
 
-.sidebar-icon path,
-.sidebar-icon circle,
-.sidebar-icon rect,
-.sidebar-icon line,
-.sidebar-icon polyline,
-.sidebar-icon polygon {
+.sidebar-icon svg {
+  color: inherit;
+  display: block;
+}
+
+.sidebar-icon svg path,
+.sidebar-icon svg circle,
+.sidebar-icon svg rect,
+.sidebar-icon svg line,
+.sidebar-icon svg polyline,
+.sidebar-icon svg polygon {
   stroke: currentColor;
   fill: none;
+  stroke-width: 2;
 }
 
 /* Specific icon colors matching source CRM */
-.sidebar-link[data-icon="notifications"] .sidebar-icon {
+.sidebar-link[data-icon="notifications"] .sidebar-icon,
+.sidebar-link[data-icon="notifications"] .sidebar-icon svg {
   color: #FBBF24 !important;
 }
 
 .sidebar-link[data-icon="notifications"] .sidebar-icon path,
 .sidebar-link[data-icon="notifications"] .sidebar-icon circle,
-.sidebar-link[data-icon="notifications"] .sidebar-icon rect {
+.sidebar-link[data-icon="notifications"] .sidebar-icon rect,
+.sidebar-link[data-icon="notifications"] .sidebar-icon line {
   stroke: #FBBF24 !important;
   fill: none !important;
 }
 
-.sidebar-link[data-icon="suggestions"] .sidebar-icon {
+.sidebar-link[data-icon="suggestions"] .sidebar-icon,
+.sidebar-link[data-icon="suggestions"] .sidebar-icon svg {
   color: #FCD34D !important;
 }
 
 .sidebar-link[data-icon="suggestions"] .sidebar-icon path,
 .sidebar-link[data-icon="suggestions"] .sidebar-icon circle,
-.sidebar-link[data-icon="suggestions"] .sidebar-icon rect {
+.sidebar-link[data-icon="suggestions"] .sidebar-icon rect,
+.sidebar-link[data-icon="suggestions"] .sidebar-icon line {
   stroke: #FCD34D !important;
   fill: none !important;
 }
 
-.sidebar-link[data-icon="issues"] .sidebar-icon {
+.sidebar-link[data-icon="issues"] .sidebar-icon,
+.sidebar-link[data-icon="issues"] .sidebar-icon svg {
   color: #10B981 !important;
 }
 
 .sidebar-link[data-icon="issues"] .sidebar-icon path,
 .sidebar-link[data-icon="issues"] .sidebar-icon circle,
-.sidebar-link[data-icon="issues"] .sidebar-icon rect {
+.sidebar-link[data-icon="issues"] .sidebar-icon rect,
+.sidebar-link[data-icon="issues"] .sidebar-icon line {
   stroke: #10B981 !important;
   fill: none !important;
 }
