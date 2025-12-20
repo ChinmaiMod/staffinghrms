@@ -95,7 +95,7 @@ function ProjectList({ testMode = false }) {
       fetchEmployees()
       fetchClients()
     }
-  }, [tenant?.tenant_id, selectedBusiness?.business_id, searchQuery, statusFilter, lcaOnlyFilter, employeeFilter, clientFilter, currentPage, testMode])
+  }, [tenant?.tenant_id, selectedBusiness?.business_id, debouncedSearchQuery, statusFilter, lcaOnlyFilter, employeeFilter, clientFilter, currentPage, testMode])
 
   const fetchProjects = async () => {
     try {
