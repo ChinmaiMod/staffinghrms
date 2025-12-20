@@ -41,6 +41,29 @@ function EmployeeTickets() {
     }
   }, [tenant?.tenant_id, selectedBusiness?.business_id, dateRangeFilter, assignedToMeOnly, showClosed])
 
+  const handleAssignToMe = async (ticketId) => {
+    if (!user?.id || !tenant?.tenant_id) {
+      alert('Unable to assign ticket: User not available')
+      return
+    }
+
+    try {
+      const { error } = await supabase
+        .from('hrms_tickets')
+        .update({ assigned_to: user.id })
+        .eq('ticket_id', ticketId)
+        .eq('tenant_id', tenant.tenant_id)
+
+      if (error) throw error
+
+      // Refresh tickets list
+      await fetchTickets()
+    } catch (err) {
+      console.error('Error assigning ticket:', err)
+      alert(`Failed to assign ticket: ${err.message || 'Unknown error'}`)
+    }
+  }
+
   const fetchTickets = async () => {
     try {
       setLoading(true)
@@ -461,11 +484,15 @@ function EmployeeTickets() {
                 </div>
                 <div className="ticket-actions">
                   {!ticket.assignedTo && (
-                    <button type="button" className="btn-outline">
+                    <button 
+                      type="button" 
+                      className="btn btn-secondary"
+                      onClick={() => handleAssignToMe(ticket.id)}
+                    >
                       Assign to Me
                     </button>
                   )}
-                  <Link to={`/hrms/tickets/${ticket.id}`} className="btn-primary-outline">
+                  <Link to={`/hrms/tickets/${ticket.id}`} className="btn btn-primary">
                     View Ticket →
                   </Link>
                 </div>
