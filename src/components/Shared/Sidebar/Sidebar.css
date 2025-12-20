@@ -140,7 +140,9 @@
   color: #FFFFFF;
 }
 
-.sidebar-link:hover .sidebar-icon path {
+.sidebar-link:hover .sidebar-icon path,
+.sidebar-link:hover .sidebar-icon circle,
+.sidebar-link:hover .sidebar-icon rect {
   stroke: #FFFFFF;
 }
 
@@ -165,7 +167,9 @@
   color: #FFFFFF;
 }
 
-.sidebar-link.active .sidebar-icon path {
+.sidebar-link.active .sidebar-icon path,
+.sidebar-link.active .sidebar-icon circle,
+.sidebar-link.active .sidebar-icon rect {
   stroke: #FFFFFF;
 }
 
@@ -176,34 +180,48 @@
   color: #FFFFFF;
 }
 
-.sidebar-icon path {
+.sidebar-icon path,
+.sidebar-icon circle,
+.sidebar-icon rect,
+.sidebar-icon line,
+.sidebar-icon polyline,
+.sidebar-icon polygon {
   stroke: currentColor;
-  stroke-width: 2;
+  fill: none;
 }
 
 /* Specific icon colors matching source CRM */
 .sidebar-link[data-icon="notifications"] .sidebar-icon {
-  color: #FBBF24;
+  color: #FBBF24 !important;
 }
 
-.sidebar-link[data-icon="notifications"] .sidebar-icon path {
-  stroke: #FBBF24;
+.sidebar-link[data-icon="notifications"] .sidebar-icon path,
+.sidebar-link[data-icon="notifications"] .sidebar-icon circle,
+.sidebar-link[data-icon="notifications"] .sidebar-icon rect {
+  stroke: #FBBF24 !important;
+  fill: none !important;
 }
 
 .sidebar-link[data-icon="suggestions"] .sidebar-icon {
-  color: #FCD34D;
+  color: #FCD34D !important;
 }
 
-.sidebar-link[data-icon="suggestions"] .sidebar-icon path {
-  stroke: #FCD34D;
+.sidebar-link[data-icon="suggestions"] .sidebar-icon path,
+.sidebar-link[data-icon="suggestions"] .sidebar-icon circle,
+.sidebar-link[data-icon="suggestions"] .sidebar-icon rect {
+  stroke: #FCD34D !important;
+  fill: none !important;
 }
 
 .sidebar-link[data-icon="issues"] .sidebar-icon {
-  color: #10B981;
+  color: #10B981 !important;
 }
 
-.sidebar-link[data-icon="issues"] .sidebar-icon path {
-  stroke: #10B981;
+.sidebar-link[data-icon="issues"] .sidebar-icon path,
+.sidebar-link[data-icon="issues"] .sidebar-icon circle,
+.sidebar-link[data-icon="issues"] .sidebar-icon rect {
+  stroke: #10B981 !important;
+  fill: none !important;
 }
 
 /* Override icon colors when active */
@@ -214,8 +232,11 @@
 }
 
 .sidebar-link.active[data-icon="notifications"] .sidebar-icon path,
+.sidebar-link.active[data-icon="notifications"] .sidebar-icon circle,
 .sidebar-link.active[data-icon="suggestions"] .sidebar-icon path,
-.sidebar-link.active[data-icon="issues"] .sidebar-icon path {
+.sidebar-link.active[data-icon="suggestions"] .sidebar-icon circle,
+.sidebar-link.active[data-icon="issues"] .sidebar-icon path,
+.sidebar-link.active[data-icon="issues"] .sidebar-icon circle {
   stroke: #FFFFFF;
 }
 
