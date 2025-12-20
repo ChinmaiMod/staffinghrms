@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../../contexts/AuthProvider'
 import { useTenant } from '../../../contexts/TenantProvider'
 import { 
@@ -21,6 +21,7 @@ import './Dashboard.css'
 function Dashboard() {
   const { user, profile } = useAuth()
   const { tenant, selectedBusiness } = useTenant()
+  const navigate = useNavigate()
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState(null)
   const [error, setError] = useState(null)
@@ -63,7 +64,7 @@ function Dashboard() {
     return (
       <div className="dashboard-error">
         <p>Error loading dashboard: {error}</p>
-        <button onClick={fetchDashboardData}>Retry</button>
+        <button className="btn btn-primary" onClick={fetchDashboardData}>Retry</button>
       </div>
     )
   }
@@ -102,6 +103,7 @@ function Dashboard() {
           trend={stats.totalEmployees.change}
           trendPercent={stats.totalEmployees.changePercent}
           secondary={`↑ All time`}
+          onClick={() => navigate('/hrms/employees')}
         />
         
         <StatCard
@@ -113,6 +115,7 @@ function Dashboard() {
           trend={stats.activeProjects.change}
           trendPercent={stats.activeProjects.changePercent}
           secondary={`↑ +${stats.activeProjects.change} this ${stats.activeProjects.period}`}
+          onClick={() => navigate('/hrms/projects?status=active')}
         />
         
         <StatCard
@@ -122,6 +125,7 @@ function Dashboard() {
           value={stats.onLeave.count}
           label="On Leave"
           secondary={`${stats.onLeave.returning} returning this week`}
+          onClick={() => navigate('/hrms/employees')}
         />
         
         <StatCard
@@ -133,6 +137,7 @@ function Dashboard() {
           trend={stats.compliancePending.overdue > 0 ? -stats.compliancePending.overdue : 0}
           secondary={stats.compliancePending.overdue > 0 ? `▲ ${stats.compliancePending.overdue} overdue` : 'Different stages'}
           highlighted={true}
+          onClick={() => navigate('/hrms/compliance')}
         />
       </div>
 
@@ -205,13 +210,25 @@ function StatCard({
   trend, 
   trendPercent, 
   secondary,
-  highlighted
+  highlighted,
+  onClick
 }) {
   const hasPositiveTrend = trend && trend > 0
   const hasNegativeTrend = trend && trend < 0
   
   return (
-    <div className={`stat-card ${highlighted ? 'highlighted' : ''}`}>
+    <div 
+      className={`stat-card ${highlighted ? 'highlighted' : ''} ${onClick ? 'clickable' : ''}`}
+      onClick={onClick}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={onClick ? (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          onClick()
+        }
+      } : undefined}
+    >
       <div className="stat-card-header">
         <div className="stat-icon-container" style={{ backgroundColor: iconBg }}>
           <Icon className="stat-icon" style={{ color: iconColor }} />
