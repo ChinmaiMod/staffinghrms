@@ -196,10 +196,33 @@
   stroke-width: 2;
 }
 
-/* Dashboard icon - preserve colorful bars */
-.sidebar-link[data-icon="dashboard"] .sidebar-icon svg rect {
+/* Colorful icons - preserve their colors */
+.sidebar-link[data-icon="dashboard"] .sidebar-icon svg rect,
+.sidebar-link[data-icon="compliance"] .sidebar-icon svg rect,
+.sidebar-link[data-icon="compliance"] .sidebar-icon svg path,
+.sidebar-link[data-icon="tickets"] .sidebar-icon svg rect,
+.sidebar-link[data-icon="tickets"] .sidebar-icon svg path,
+.sidebar-link[data-icon="employees"] .sidebar-icon svg circle,
+.sidebar-link[data-icon="employees"] .sidebar-icon svg path,
+.sidebar-link[data-icon="clients"] .sidebar-icon svg rect,
+.sidebar-link[data-icon="clients"] .sidebar-icon svg path,
+.sidebar-link[data-icon="vendors"] .sidebar-icon svg rect,
+.sidebar-link[data-icon="vendors"] .sidebar-icon svg circle,
+.sidebar-link[data-icon="projects"] .sidebar-icon svg rect,
+.sidebar-link[data-icon="projects"] .sidebar-icon svg path,
+.sidebar-link[data-icon="documents"] .sidebar-icon svg path,
+.sidebar-link[data-icon="immigration"] .sidebar-icon svg circle,
+.sidebar-link[data-icon="immigration"] .sidebar-icon svg path,
+.sidebar-link[data-icon="timesheets"] .sidebar-icon svg circle,
+.sidebar-link[data-icon="timesheets"] .sidebar-icon svg path,
+.sidebar-link[data-icon="admin"] .sidebar-icon svg circle,
+.sidebar-link[data-icon="admin"] .sidebar-icon svg path,
+.sidebar-link[data-icon="newsletter"] .sidebar-icon svg rect,
+.sidebar-link[data-icon="newsletter"] .sidebar-icon svg path,
+.sidebar-link[data-icon="profile"] .sidebar-icon svg circle,
+.sidebar-link[data-icon="profile"] .sidebar-icon svg path {
   fill: inherit !important;
-  stroke: none !important;
+  stroke: inherit !important;
 }
 
 /* Specific icon colors matching source CRM */

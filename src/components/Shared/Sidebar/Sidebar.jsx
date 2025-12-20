@@ -1,25 +1,24 @@
 import { NavLink, useLocation } from 'react-router-dom'
 import {
-  ChartBarIcon,
-  ExclamationTriangleIcon,
-  TicketIcon,
-  UsersIcon,
-  BuildingOfficeIcon,
-  TruckIcon,
-  BriefcaseIcon,
-  DocumentTextIcon,
-  GlobeAmericasIcon,
-  ClockIcon,
-  Cog6ToothIcon,
-  BellIcon,
-  NewspaperIcon,
-  LightBulbIcon,
-  BugAntIcon,
-  UserCircleIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
 } from '@heroicons/react/24/outline'
 import DashboardIcon from './DashboardIcon'
+import {
+  ComplianceIcon,
+  TicketsIcon,
+  EmployeesIcon,
+  ClientsIcon,
+  VendorsIcon,
+  ProjectsIcon,
+  DocumentsIcon,
+  ImmigrationIcon,
+  TimesheetsIcon,
+  AdminIcon,
+  NewsletterIcon,
+  ProfileIcon,
+} from './ColorfulIcons'
+import { BellIcon, LightBulbIcon, BugAntIcon } from '@heroicons/react/24/outline'
 import './Sidebar.css'
 
 const menuItems = [
@@ -32,62 +31,62 @@ const menuItems = [
   {
     id: 'compliance',
     label: 'Compliance Dashboard',
-    icon: ExclamationTriangleIcon,
+    icon: ComplianceIcon,
     path: '/hrms/compliance',
   },
   {
     id: 'tickets',
     label: 'Employee Tickets',
-    icon: TicketIcon,
+    icon: TicketsIcon,
     path: '/hrms/tickets',
   },
   {
     id: 'employees',
     label: 'Employee Management',
-    icon: UsersIcon,
+    icon: EmployeesIcon,
     path: '/hrms/employees',
   },
   {
     id: 'clients',
     label: 'Client Management',
-    icon: BuildingOfficeIcon,
+    icon: ClientsIcon,
     path: '/hrms/clients',
   },
   {
     id: 'vendors',
     label: 'Vendor Management',
-    icon: TruckIcon,
+    icon: VendorsIcon,
     path: '/hrms/vendors',
   },
   {
     id: 'projects',
     label: 'Employee Projects',
-    icon: BriefcaseIcon,
+    icon: ProjectsIcon,
     path: '/hrms/projects',
   },
   {
     id: 'documents',
     label: 'Document Management',
-    icon: DocumentTextIcon,
+    icon: DocumentsIcon,
     path: '/hrms/documents',
   },
   {
     id: 'immigration',
     label: 'Visa & Immigration',
-    icon: GlobeAmericasIcon,
+    icon: ImmigrationIcon,
     path: '/hrms/immigration',
   },
   {
     id: 'timesheets',
     label: 'Timesheet Management',
-    icon: ClockIcon,
+    icon: TimesheetsIcon,
     path: '/hrms/timesheets',
   },
   { type: 'divider' },
   {
     id: 'admin',
     label: 'Data Administration',
-    icon: Cog6ToothIcon,
+    icon: AdminIcon,
     path: '/hrms/data-admin',
   },
   {
@@ -99,7 +98,7 @@ const menuItems = [
   {
     id: 'newsletter',
     label: 'Newsletter',
-    icon: NewspaperIcon,
+    icon: NewsletterIcon,
     path: '/hrms/newsletter',
   },
   { type: 'divider' },
@@ -118,7 +117,7 @@ const menuItems = [
   {
     id: 'profile',
     label: 'Profile & Settings',
-    icon: UserCircleIcon,
+    icon: ProfileIcon,
     path: '/hrms/profile',
   },
 ]
@@ -171,8 +170,9 @@ function Sidebar({ collapsed, onToggle }) {
 
             const Icon = item.icon
             const getIconColor = (isActive) => {
-              // Dashboard icon has its own colors, don't override
-              if (item.id === 'dashboard') return undefined
+              // Colorful icons have their own colors, don't override
+              const colorfulIcons = ['dashboard', 'compliance', 'tickets', 'employees', 'clients', 'vendors', 'projects', 'documents', 'immigration', 'timesheets', 'admin', 'newsletter', 'profile']
+              if (colorfulIcons.includes(item.id)) return undefined
               if (isActive) return '#FFFFFF'
               switch (item.id) {
                 case 'notifications':
