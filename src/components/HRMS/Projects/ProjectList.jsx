@@ -15,6 +15,7 @@ import { useTenant } from '../../../contexts/TenantProvider'
 import { useAuth } from '../../../contexts/AuthProvider'
 import LoadingSpinner from '../../Shared/LoadingSpinner'
 import BusinessFilter from '../../Shared/BusinessFilter'
+import { useDebounce } from '../../../utils/debounce'
 import './ProjectList.css'
 
 // Project status configuration with colors
@@ -55,7 +56,7 @@ function ProjectList({ testMode = false }) {
   // Reset pagination when filters change
   useEffect(() => {
     setCurrentPage(1)
-  }, [statusFilter, lcaOnlyFilter, employeeFilter, clientFilter, searchQuery])
+  }, [statusFilter, lcaOnlyFilter, employeeFilter, clientFilter, debouncedSearchQuery])
 
   useEffect(() => {
     if (testMode) {
@@ -155,8 +156,8 @@ function ProjectList({ testMode = false }) {
       }
 
       // Filter by search query
-      if (searchQuery) {
-        query = query.or(`project_name.ilike.%${searchQuery}%,project_code.ilike.%${searchQuery}%,end_client_name.ilike.%${searchQuery}%`)
+      if (debouncedSearchQuery) {
+        query = query.or(`project_name.ilike.%${debouncedSearchQuery}%,project_code.ilike.%${debouncedSearchQuery}%,end_client_name.ilike.%${debouncedSearchQuery}%`)
       }
 
       // Pagination
@@ -237,8 +238,8 @@ function ProjectList({ testMode = false }) {
 
   const filteredProjects = useMemo(() => {
     return projects.filter((project) => {
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase()
+      if (debouncedSearchQuery) {
+        const query = debouncedSearchQuery.toLowerCase()
         const employeeName = `${project.employee?.first_name || ''} ${project.employee?.last_name || ''}`.toLowerCase()
         const employeeCode = project.employee?.employee_code?.toLowerCase() || ''
         if (
@@ -253,7 +254,7 @@ function ProjectList({ testMode = false }) {
       }
       return true
     })
-  }, [projects, searchQuery])
+  }, [projects, debouncedSearchQuery])
 
   const totalPages = Math.ceil(totalCount / rowsPerPage)
 

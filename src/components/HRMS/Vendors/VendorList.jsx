@@ -15,6 +15,7 @@ import { useTenant } from '../../../contexts/TenantProvider'
 import { useAuth } from '../../../contexts/AuthProvider'
 import LoadingSpinner from '../../Shared/LoadingSpinner'
 import BusinessFilter from '../../Shared/BusinessFilter'
+import { useDebounce } from '../../../utils/debounce'
 import './VendorList.css'
 
 // Vendor type configuration with colors
@@ -39,6 +40,7 @@ function VendorList({ testMode = false }) {
 
   // Filters
   const [searchQuery, setSearchQuery] = useState('')
+  const debouncedSearchQuery = useDebounce(searchQuery, 300)
   const [typeFilter, setTypeFilter] = useState('all')
   const [statusFilter, setStatusFilter] = useState('active')
   const [paymentTermsFilter, setPaymentTermsFilter] = useState('all')
@@ -54,7 +56,7 @@ function VendorList({ testMode = false }) {
   // Reset pagination when filters change
   useEffect(() => {
     setCurrentPage(1)
-  }, [searchQuery, typeFilter, statusFilter, paymentTermsFilter])
+  }, [debouncedSearchQuery, typeFilter, statusFilter, paymentTermsFilter])
 
   useEffect(() => {
     if (testMode) {
@@ -82,7 +84,7 @@ function VendorList({ testMode = false }) {
     if (tenant?.tenant_id) {
       fetchVendors()
     }
-  }, [tenant?.tenant_id, selectedBusiness?.business_id, searchQuery, typeFilter, statusFilter, paymentTermsFilter, currentPage, testMode])
+  }, [tenant?.tenant_id, selectedBusiness?.business_id, debouncedSearchQuery, typeFilter, statusFilter, paymentTermsFilter, currentPage, testMode])
 
   const fetchVendors = async () => {
     try {
@@ -125,8 +127,8 @@ function VendorList({ testMode = false }) {
       }
 
       // Filter by search query
-      if (searchQuery) {
-        query = query.or(`vendor_name.ilike.%${searchQuery}%,vendor_code.ilike.%${searchQuery}%,ein.ilike.%${searchQuery}%`)
+      if (debouncedSearchQuery) {
+        query = query.or(`vendor_name.ilike.%${debouncedSearchQuery}%,vendor_code.ilike.%${debouncedSearchQuery}%,ein.ilike.%${debouncedSearchQuery}%`)
       }
 
       // Pagination
@@ -170,8 +172,8 @@ function VendorList({ testMode = false }) {
 
   const filteredVendors = useMemo(() => {
     return vendors.filter((vendor) => {
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase()
+      if (debouncedSearchQuery) {
+        const query = debouncedSearchQuery.toLowerCase()
         if (
           !vendor.vendor_name.toLowerCase().includes(query) &&
           !vendor.vendor_code.toLowerCase().includes(query) &&
@@ -182,7 +184,7 @@ function VendorList({ testMode = false }) {
       }
       return true
     })
-  }, [vendors, searchQuery])
+  }, [vendors, debouncedSearchQuery])
 
   const totalPages = Math.ceil(totalCount / rowsPerPage)
 

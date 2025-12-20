@@ -16,6 +16,7 @@ import { useTenant } from '../../../contexts/TenantProvider'
 import { useAuth } from '../../../contexts/AuthProvider'
 import LoadingSpinner from '../../Shared/LoadingSpinner'
 import BusinessFilter from '../../Shared/BusinessFilter'
+import { useDebounce } from '../../../utils/debounce'
 import './NewsletterList.css'
 
 // Newsletter status configuration with colors
@@ -41,12 +42,18 @@ function NewsletterList({ testMode = false }) {
 
   // Filters
   const [searchQuery, setSearchQuery] = useState('')
+  const debouncedSearchQuery = useDebounce(searchQuery, 300)
   const [statusFilter, setStatusFilter] = useState('all')
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1)
   const [rowsPerPage] = useState(25)
   const [totalCount, setTotalCount] = useState(0)
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [statusFilter, debouncedSearchQuery])
 
   useEffect(() => {
     if (testMode) {
@@ -69,7 +76,7 @@ function NewsletterList({ testMode = false }) {
     if (tenant?.tenant_id && user?.id) {
       fetchNewsletters()
     }
-  }, [tenant?.tenant_id, selectedBusiness?.business_id, user?.id, statusFilter, searchQuery, currentPage, testMode])
+  }, [tenant?.tenant_id, selectedBusiness?.business_id, user?.id, statusFilter, debouncedSearchQuery, currentPage, testMode])
 
   const fetchNewsletters = async () => {
     try {
@@ -100,8 +107,8 @@ function NewsletterList({ testMode = false }) {
       }
 
       // Apply search filter
-      if (searchQuery.trim()) {
-        query = query.or(`title.ilike.%${searchQuery}%,subject_line.ilike.%${searchQuery}%`)
+      if (debouncedSearchQuery.trim()) {
+        query = query.or(`title.ilike.%${debouncedSearchQuery}%,subject_line.ilike.%${debouncedSearchQuery}%`)
       }
 
       // Apply pagination

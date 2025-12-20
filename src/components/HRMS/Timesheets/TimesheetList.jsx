@@ -11,6 +11,7 @@ import { supabase } from '../../../api/supabaseClient'
 import { useTenant } from '../../../contexts/TenantProvider'
 import LoadingSpinner from '../../Shared/LoadingSpinner'
 import BusinessFilter from '../../Shared/BusinessFilter'
+import { useDebounce } from '../../../utils/debounce'
 import './TimesheetList.css'
 
 // Timesheet status configuration with colors
@@ -44,6 +45,7 @@ function TimesheetList({ testMode = false }) {
 
   // Filters
   const [searchQuery, setSearchQuery] = useState('')
+  const debouncedSearchQuery = useDebounce(searchQuery, 300)
   const [statusFilter, setStatusFilter] = useState('all')
   const [employeeFilter, setEmployeeFilter] = useState('all')
   const [projectFilter, setProjectFilter] = useState('all')
@@ -101,7 +103,7 @@ function TimesheetList({ testMode = false }) {
   // Reset pagination when filters change
   useEffect(() => {
     setCurrentPage(1)
-  }, [statusFilter, employeeFilter, projectFilter, startDate, endDate, searchQuery])
+  }, [statusFilter, employeeFilter, projectFilter, startDate, endDate, debouncedSearchQuery])
 
   useEffect(() => {
     if (testMode) {
@@ -262,8 +264,8 @@ function TimesheetList({ testMode = false }) {
 
   const filteredTimesheets = useMemo(() => {
     return timesheets.filter((timesheet) => {
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase()
+      if (debouncedSearchQuery) {
+        const query = debouncedSearchQuery.toLowerCase()
         const employeeName = `${timesheet.employee?.first_name || ''} ${timesheet.employee?.last_name || ''}`.toLowerCase()
         const employeeCode = timesheet.employee?.employee_code?.toLowerCase() || ''
         const projectName = timesheet.project?.project_name?.toLowerCase() || ''
@@ -277,7 +279,7 @@ function TimesheetList({ testMode = false }) {
       }
       return true
     })
-  }, [timesheets, searchQuery])
+  }, [timesheets, debouncedSearchQuery])
 
   const totalPages = Math.ceil(totalCount / rowsPerPage)
 

@@ -20,6 +20,7 @@ function SuggestionList() {
   const [error, setError] = useState(null)
   const [suggestions, setSuggestions] = useState([])
   const [totalCount, setTotalCount] = useState(0)
+  const [hasAnySuggestions, setHasAnySuggestions] = useState(false)
 
   // Filters
   const [statusFilter, setStatusFilter] = useState('all')

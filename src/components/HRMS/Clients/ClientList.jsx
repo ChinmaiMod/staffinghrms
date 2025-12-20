@@ -14,6 +14,7 @@ import { useTenant } from '../../../contexts/TenantProvider'
 import { useAuth } from '../../../contexts/AuthProvider'
 import LoadingSpinner from '../../Shared/LoadingSpinner'
 import BusinessFilter from '../../Shared/BusinessFilter'
+import { useDebounce } from '../../../utils/debounce'
 import './ClientList.css'
 
 /**
@@ -31,6 +32,7 @@ function ClientList() {
 
   // Filters
   const [searchQuery, setSearchQuery] = useState('')
+  const debouncedSearchQuery = useDebounce(searchQuery, 300)
   const [typeFilter, setTypeFilter] = useState('all')
   const [industryFilter, setIndustryFilter] = useState('all')
   const [statusFilter, setStatusFilter] = useState('active')
@@ -46,13 +48,13 @@ function ClientList() {
   // Reset pagination when filters change
   useEffect(() => {
     setCurrentPage(1)
-  }, [searchQuery, typeFilter, industryFilter, statusFilter])
+  }, [debouncedSearchQuery, typeFilter, industryFilter, statusFilter])
 
   useEffect(() => {
     if (tenant?.tenant_id) {
       fetchClients()
     }
-  }, [tenant?.tenant_id, selectedBusiness?.business_id, searchQuery, typeFilter, industryFilter, statusFilter, currentPage])
+  }, [tenant?.tenant_id, selectedBusiness?.business_id, debouncedSearchQuery, typeFilter, industryFilter, statusFilter, currentPage])
 
   const fetchClients = async () => {
     try {
@@ -85,8 +87,8 @@ function ClientList() {
       }
 
       // Filter by search query
-      if (searchQuery) {
-        query = query.or(`client_name.ilike.%${searchQuery}%,website.ilike.%${searchQuery}%`)
+      if (debouncedSearchQuery) {
+        query = query.or(`client_name.ilike.%${debouncedSearchQuery}%,website.ilike.%${debouncedSearchQuery}%`)
       }
 
       // Filter by industry
@@ -132,8 +134,8 @@ function ClientList() {
 
   const filteredClients = useMemo(() => {
     return clients.filter((client) => {
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase()
+      if (debouncedSearchQuery) {
+        const query = debouncedSearchQuery.toLowerCase()
         if (
           !client.name.toLowerCase().includes(query) &&
           !client.website?.toLowerCase().includes(query)
@@ -143,7 +145,7 @@ function ClientList() {
       }
       return true
     })
-  }, [clients, searchQuery])
+  }, [clients, debouncedSearchQuery])
 
   const industries = ['Technology', 'Healthcare', 'Finance', 'Manufacturing', 'Retail', 'Other']
   const totalPages = Math.ceil(totalCount / rowsPerPage)

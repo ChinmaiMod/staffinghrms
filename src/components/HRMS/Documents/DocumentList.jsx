@@ -17,6 +17,7 @@ import { useTenant } from '../../../contexts/TenantProvider'
 import { useAuth } from '../../../contexts/AuthProvider'
 import LoadingSpinner from '../../Shared/LoadingSpinner'
 import BusinessFilter from '../../Shared/BusinessFilter'
+import { useDebounce } from '../../../utils/debounce'
 import './DocumentList.css'
 
 /**
@@ -31,9 +32,11 @@ function DocumentList() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [documents, setDocuments] = useState([])
+  const [hasAnyDocuments, setHasAnyDocuments] = useState(false) // Track if any documents exist for empty state distinction
 
   // Filters
   const [searchQuery, setSearchQuery] = useState('')
+  const debouncedSearchQuery = useDebounce(searchQuery, 300)
   const [entityTypeFilter, setEntityTypeFilter] = useState('all')
   const [documentTypeFilter, setDocumentTypeFilter] = useState('all')
   const [statusFilter, setStatusFilter] = useState('all')
@@ -50,7 +53,7 @@ function DocumentList() {
   // Reset pagination when filters change
   useEffect(() => {
     setCurrentPage(1)
-  }, [searchQuery, entityTypeFilter, documentTypeFilter, statusFilter, expiryFilter])
+  }, [debouncedSearchQuery, entityTypeFilter, documentTypeFilter, statusFilter, expiryFilter])
 
   useEffect(() => {
     if (tenant?.tenant_id) {
@@ -59,7 +62,7 @@ function DocumentList() {
   }, [
     tenant?.tenant_id,
     selectedBusiness?.business_id,
-    searchQuery,
+    debouncedSearchQuery,
     entityTypeFilter,
     documentTypeFilter,
     statusFilter,
@@ -102,26 +105,40 @@ function DocumentList() {
         query = query.eq('document_type', documentTypeFilter)
       }
 
-      // Filter by status
-      if (statusFilter === 'valid') {
-        query = query.eq('document_status', 'active')
-      } else if (statusFilter === 'expiring') {
-        query = query.eq('document_status', 'active').lte('expiry_date', new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0])
-      } else if (statusFilter === 'expired') {
-        query = query.eq('document_status', 'expired')
-      }
-
-      // Filter by expiry
+      // Filter by status and expiry - consolidate logic to avoid conflicts
+      // Priority: expiryFilter takes precedence over statusFilter for expiry-related filters
       if (expiryFilter === 'expiring_7_days') {
         const date7Days = new Date()
         date7Days.setDate(date7Days.getDate() + 7)
-        query = query.lte('expiry_date', date7Days.toISOString().split('T')[0]).gte('expiry_date', new Date().toISOString().split('T')[0])
+        query = query
+          .eq('document_status', 'active')
+          .lte('expiry_date', date7Days.toISOString().split('T')[0])
+          .gte('expiry_date', new Date().toISOString().split('T')[0])
       } else if (expiryFilter === 'expiring_30_days') {
         const date30Days = new Date()
         date30Days.setDate(date30Days.getDate() + 30)
-        query = query.lte('expiry_date', date30Days.toISOString().split('T')[0]).gte('expiry_date', new Date().toISOString().split('T')[0])
+        query = query
+          .eq('document_status', 'active')
+          .lte('expiry_date', date30Days.toISOString().split('T')[0])
+          .gte('expiry_date', new Date().toISOString().split('T')[0])
       } else if (expiryFilter === 'expired') {
         query = query.lt('expiry_date', new Date().toISOString().split('T')[0])
+      } else if (expiryFilter === 'no_expiry') {
+        query = query.is('expiry_date', null)
+      } else {
+        // Apply status filter only if expiry filter is not set
+        if (statusFilter === 'valid') {
+          query = query.eq('document_status', 'active')
+        } else if (statusFilter === 'expiring') {
+          const date30Days = new Date()
+          date30Days.setDate(date30Days.getDate() + 30)
+          query = query
+            .eq('document_status', 'active')
+            .lte('expiry_date', date30Days.toISOString().split('T')[0])
+            .gte('expiry_date', new Date().toISOString().split('T')[0])
+        } else if (statusFilter === 'expired') {
+          query = query.eq('document_status', 'expired')
+        }
       }
 
       // Filter by search query

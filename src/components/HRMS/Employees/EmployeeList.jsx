@@ -4,6 +4,7 @@ import { supabase } from '../../../api/supabaseClient'
 import { useTenant } from '../../../contexts/TenantProvider'
 import LoadingSpinner from '../../Shared/LoadingSpinner'
 import BusinessFilter from '../../Shared/BusinessFilter'
+import { useDebounce } from '../../../utils/debounce'
 import {
   MagnifyingGlassIcon,
   FunnelIcon,
@@ -58,6 +59,7 @@ function EmployeeList({ testMode = false }) {
 
   // Filter state
   const [searchQuery, setSearchQuery] = useState('')
+  const debouncedSearchQuery = useDebounce(searchQuery, 300)
   const [selectedTypes, setSelectedTypes] = useState([])
   const [selectedStatuses, setSelectedStatuses] = useState([])
   const [selectedDepartment, setSelectedDepartment] = useState('')
@@ -249,7 +251,7 @@ function EmployeeList({ testMode = false }) {
       
       return true
     })
-  }, [employees, searchQuery, selectedTypes, selectedStatuses, selectedDepartment])
+  }, [employees, debouncedSearchQuery, selectedTypes, selectedStatuses, selectedDepartment])
 
   // Paginated employees
   const paginatedEmployees = useMemo(() => {
