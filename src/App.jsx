@@ -51,6 +51,21 @@ function PublicRoute({ children }) {
   return children
 }
 
+// Root redirect component - handles auth-aware redirects
+function RootRedirect() {
+  const { user, loading } = useAuth()
+  
+  if (loading) {
+    return <LoadingSpinner fullScreen message="Loading..." />
+  }
+  
+  if (user) {
+    return <Navigate to="/hrms/dashboard" replace />
+  }
+  
+  return <Navigate to="/login" replace />
+}
+
 function App() {
   return (
     <>
@@ -95,9 +110,9 @@ function App() {
         {/* Additional routes will be added here */}
       </Route>
       
-      {/* Default redirect */}
-      <Route path="/" element={<Navigate to="/hrms/dashboard" replace />} />
-      <Route path="*" element={<Navigate to="/hrms/dashboard" replace />} />
+      {/* Default redirect - handles auth-aware redirects */}
+      <Route path="/" element={<RootRedirect />} />
+      <Route path="*" element={<RootRedirect />} />
       </Routes>
       <ToastContainer />
     </>
