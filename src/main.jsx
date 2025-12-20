@@ -6,8 +6,8 @@ import { AuthProvider } from './contexts/AuthProvider'
 import { TenantProvider } from './contexts/TenantProvider'
 import { PermissionsProvider } from './contexts/PermissionsProvider'
 import { ToastProvider } from './contexts/ToastProvider'
-import './styles/index.css'
 import './styles/design-system.css'
+import './styles/index.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
