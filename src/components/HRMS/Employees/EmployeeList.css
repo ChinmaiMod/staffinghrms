@@ -177,6 +177,53 @@
   margin-bottom: var(--space-4, 16px);
 }
 
+/* ===== Employee Type Filter Buttons ===== */
+.employee-type-filters {
+  display: flex;
+  gap: var(--space-2, 8px);
+  align-items: center;
+}
+
+.btn-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2, 8px);
+  padding: var(--space-2, 8px) var(--space-3, 12px);
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #d1d5db);
+  border-radius: var(--radius-md, 6px);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-primary, #374151);
+  cursor: pointer;
+  transition: all var(--duration-fast, 150ms) var(--ease-in-out);
+  white-space: nowrap;
+}
+
+.btn-filter:hover {
+  background: var(--color-surface-hover, #f9fafb);
+  border-color: var(--color-border-dark, #9ca3af);
+}
+
+.btn-filter:focus,
+.btn-filter:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-primary-light, rgba(59, 130, 246, 0.1));
+  border-color: var(--color-primary, #3b82f6);
+}
+
+.btn-filter.active {
+  background: var(--color-primary-light, #dbeafe);
+  color: var(--color-primary-dark, #1e40af);
+  border-color: var(--color-primary, #3b82f6);
+  font-weight: 500;
+}
+
+.btn-filter.active:hover {
+  background: var(--color-primary-light, #dbeafe);
+  border-color: var(--color-primary-dark, #2563eb);
+}
+
 .search-input-wrapper {
   position: relative;
   flex: 1;
