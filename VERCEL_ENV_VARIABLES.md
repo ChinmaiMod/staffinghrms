@@ -29,8 +29,8 @@ VITE_FRONTEND_URL=https://your-app.vercel.app
 
 ## Optional Environment Variables
 
-### Email Configuration (Optional but Recommended)
-These are used for sending emails via Resend API:
+### Email Configuration (System Defaults - Fallback Only)
+**Important:** Resend API keys are stored in the Supabase database table `business_resend_api_keys` and retrieved dynamically based on the selected business/domain. These environment variables are only used as **fallback defaults** when no business-specific configuration exists.
 
 ```env
 VITE_RESEND_API_KEY=re_xxxxxxxxxxxxx
@@ -38,15 +38,52 @@ VITE_DEFAULT_FROM_EMAIL=noreply@yourdomain.com
 VITE_DEFAULT_FROM_NAME=Staffing HRMS
 ```
 
+**How Resend API Keys Work:**
+1. **Primary Source**: Resend API keys are stored in the `business_resend_api_keys` table in Supabase
+2. **Dynamic Retrieval**: The application retrieves the appropriate API key based on:
+   - `business_id` - The selected business
+   - `tenant_id` - The current tenant
+   - `is_active = true` - Only active configurations are used
+3. **Fallback**: If no business-specific configuration exists, the app falls back to these environment variables
+4. **System Emails**: Non-business emails (registration, password reset) always use the system defaults
+
+**Database Table Structure (`business_resend_api_keys`):**
+```sql
+- config_id (UUID, Primary Key)
+- tenant_id (UUID, References tenants)
+- business_id (UUID, References businesses)
+- resend_api_key (TEXT) - The Resend API key
+- from_email (TEXT) - Sender email address
+- from_name (TEXT, nullable) - Sender display name
+- is_active (BOOLEAN) - Whether this configuration is active
+- created_by (UUID, References auth.users)
+- updated_by (UUID, References auth.users)
+- created_at (TIMESTAMPTZ)
+- updated_at (TIMESTAMPTZ)
+```
+
+**How to Configure Business-Specific Resend API Keys:**
+1. Log into the HRMS application
+2. Navigate to **Data Administration** → **Resend API Keys**
+3. Click **Add API Configuration**
+4. Select the business
+5. Enter the Resend API key (starts with `re_`)
+6. Enter the verified sender email address
+7. Enter the sender display name
+8. Save the configuration
+
 **How to get Resend API key:**
 1. Sign up at [Resend.com](https://resend.com)
 2. Go to **API Keys** section
 3. Create a new API key
 4. Copy the key (starts with `re_`)
+5. Verify your domain in Resend dashboard
+6. Configure it in the HRMS application for each business
 
-**Note:** If not provided, the app will use default values:
+**Note:** If environment variables are not provided, the app will use these hardcoded defaults:
 - `fromEmail`: `noreply@staffingcrm.com`
 - `fromName`: `Staffing CRM`
+- `apiKey`: Empty string (emails will fail if no database config exists)
 
 ### OpenRouter API Key (Optional)
 ```env
@@ -102,9 +139,9 @@ vercel env add VITE_DEFAULT_FROM_NAME production
 | `VITE_SUPABASE_ANON_KEY` | ✅ Yes | Supabase anonymous/public key | `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...` |
 | `VITE_FUNCTIONS_URL` | ✅ Yes | Supabase Edge Functions URL | `https://abc123.supabase.co/functions/v1` |
 | `VITE_FRONTEND_URL` | ⚠️ Recommended | Your Vercel app URL | `https://staffing-hrms.vercel.app` |
-| `VITE_RESEND_API_KEY` | ⚪ Optional | Resend API key for emails | `re_xxxxxxxxxxxxx` |
-| `VITE_DEFAULT_FROM_EMAIL` | ⚪ Optional | Default sender email | `noreply@yourdomain.com` |
-| `VITE_DEFAULT_FROM_NAME` | ⚪ Optional | Default sender name | `Staffing HRMS` |
+| `VITE_RESEND_API_KEY` | ⚪ Optional (Fallback) | System default Resend API key (used only if no business-specific config exists) | `re_xxxxxxxxxxxxx` |
+| `VITE_DEFAULT_FROM_EMAIL` | ⚪ Optional (Fallback) | System default sender email (used only if no business-specific config exists) | `noreply@yourdomain.com` |
+| `VITE_DEFAULT_FROM_NAME` | ⚪ Optional (Fallback) | System default sender name (used only if no business-specific config exists) | `Staffing HRMS` |
 | `VITE_OPENROUTER_API_KEY` | ⚪ Optional | OpenRouter API key (for AI features) | `sk-or-v1-xxxxxxxxxxxxx` |
 
 ## Important Notes
@@ -126,6 +163,13 @@ vercel env add VITE_DEFAULT_FROM_NAME production
      - Go to **Edge Functions** → **Settings** → **Secrets**
    - These are separate from Vercel environment variables
 
+5. **Resend API Keys Storage**:
+   - **Primary Storage**: Resend API keys are stored in the `business_resend_api_keys` table in Supabase
+   - **Retrieval**: Keys are retrieved dynamically based on `business_id` and `tenant_id` when sending emails
+   - **Environment Variables**: Only used as fallback defaults when no business-specific configuration exists
+   - **Security**: API keys stored in the database are encrypted at rest by Supabase
+   - **Management**: Configure business-specific keys through the HRMS UI (Data Administration → Resend API Keys)
+
 ## Verification
 
 After setting up environment variables and deploying:
@@ -143,9 +187,20 @@ After setting up environment variables and deploying:
 - Redeploy after adding variables
 
 ### Email not sending
-- Check if `VITE_RESEND_API_KEY` is set correctly
-- Verify the API key is active in Resend dashboard
-- Check Supabase Edge Functions logs for email-related errors
+- **Check business-specific configuration**: Verify that Resend API keys are configured in the database for the specific business
+  - Navigate to **Data Administration** → **Resend API Keys** in the app
+  - Ensure the business has an active configuration
+  - Verify `is_active = true` in the `business_resend_api_keys` table
+- **Check system defaults**: If no business-specific config exists, verify `VITE_RESEND_API_KEY` is set correctly
+- **Verify API key**: Check that the Resend API key is active in Resend dashboard
+- **Check domain verification**: Ensure the sender email domain is verified in Resend
+- **Check Supabase Edge Functions logs**: Review Edge Functions logs for email-related errors
+- **Query database**: Run this query to check configurations:
+  ```sql
+  SELECT business_id, resend_api_key, from_email, from_name, is_active 
+  FROM business_resend_api_keys 
+  WHERE tenant_id = 'your-tenant-id' AND is_active = true;
+  ```
 
 ### Edge Functions not working
 - Verify `VITE_FUNCTIONS_URL` matches your Supabase project URL
