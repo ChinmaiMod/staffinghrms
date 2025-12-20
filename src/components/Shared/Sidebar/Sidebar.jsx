@@ -19,13 +19,14 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
 } from '@heroicons/react/24/outline'
+import DashboardIcon from './DashboardIcon'
 import './Sidebar.css'
 
 const menuItems = [
   {
     id: 'dashboard',
     label: 'Dashboard',
-    icon: ChartBarIcon,
+    icon: DashboardIcon,
     path: '/hrms/dashboard',
   },
   {
@@ -170,6 +171,8 @@ function Sidebar({ collapsed, onToggle }) {
 
             const Icon = item.icon
             const getIconColor = (isActive) => {
+              // Dashboard icon has its own colors, don't override
+              if (item.id === 'dashboard') return undefined
               if (isActive) return '#FFFFFF'
               switch (item.id) {
                 case 'notifications':
@@ -194,16 +197,19 @@ function Sidebar({ collapsed, onToggle }) {
                   data-testid={`nav-${item.id}`}
                   data-icon={item.id}
                 >
-                  {({ isActive }) => (
-                    <>
-                      <Icon 
-                        className="sidebar-icon" 
-                        aria-hidden="true"
-                        style={{ color: getIconColor(isActive) }}
-                      />
-                      {!collapsed && <span className="sidebar-label">{item.label}</span>}
-                    </>
-                  )}
+                  {({ isActive }) => {
+                    const iconColor = getIconColor(isActive)
+                    return (
+                      <>
+                        <Icon 
+                          className="sidebar-icon" 
+                          aria-hidden="true"
+                          style={iconColor ? { color: iconColor } : undefined}
+                        />
+                        {!collapsed && <span className="sidebar-label">{item.label}</span>}
+                      </>
+                    )
+                  }}
                 </NavLink>
               </li>
             )

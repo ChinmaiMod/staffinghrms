@@ -196,6 +196,12 @@
   stroke-width: 2;
 }
 
+/* Dashboard icon - preserve colorful bars */
+.sidebar-link[data-icon="dashboard"] .sidebar-icon svg rect {
+  fill: inherit !important;
+  stroke: none !important;
+}
+
 /* Specific icon colors matching source CRM */
 .sidebar-link[data-icon="notifications"] .sidebar-icon,
 .sidebar-link[data-icon="notifications"] .sidebar-icon svg {
