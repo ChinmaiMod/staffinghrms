@@ -66,16 +66,19 @@
 
 .filters-bar {
   display: flex;
+  flex-direction: row;
   align-items: center;
   gap: var(--space-3, 12px);
   margin-bottom: var(--space-4, 16px);
   flex-wrap: nowrap;
+  width: 100%;
 }
 
 .search-box {
   position: relative;
-  flex: 1;
-  min-width: 300px;
+  flex: 1 1 auto;
+  min-width: 200px;
+  max-width: 500px;
 }
 
 .search-icon {
@@ -121,9 +124,12 @@
 
 .filter-group {
   display: flex;
+  flex-direction: row;
   align-items: center;
   gap: var(--space-2, 8px);
   flex-shrink: 0;
+  flex-wrap: nowrap;
+  white-space: nowrap;
 }
 
 .filter-group .btn {
