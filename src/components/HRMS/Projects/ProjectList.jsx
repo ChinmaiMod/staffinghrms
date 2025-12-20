@@ -48,6 +48,9 @@ function ProjectList({ testMode = false }) {
   const [employees, setEmployees] = useState([])
   const [clients, setClients] = useState([])
 
+  // Debounce search query
+  const debouncedSearchQuery = useDebounce(searchQuery, 300)
+
   // Pagination
   const [currentPage, setCurrentPage] = useState(1)
   const [rowsPerPage] = useState(25)
