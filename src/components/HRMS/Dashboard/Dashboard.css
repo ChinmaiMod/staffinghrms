@@ -47,10 +47,10 @@
 .stat-card {
   background: var(--color-surface, #ffffff);
   border: 1px solid var(--color-border, #e5e7eb);
-  border-radius: var(--radius-xl, 12px);
+  border-radius: 16px;
   padding: var(--space-5, 20px);
   min-height: 140px;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 2px 18px rgba(15, 23, 42, 0.08);
   transition: box-shadow var(--duration-normal, 200ms) var(--ease-in-out);
   display: flex;
   flex-direction: column;
@@ -58,7 +58,7 @@
 }
 
 .stat-card:hover {
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 4px 24px rgba(15, 23, 42, 0.12);
 }
 
 .stat-card-header {
