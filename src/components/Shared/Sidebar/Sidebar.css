@@ -140,6 +140,10 @@
   color: #FFFFFF;
 }
 
+.sidebar-link:hover .sidebar-icon path {
+  stroke: #FFFFFF;
+}
+
 .sidebar-link.active {
   background: #4A69D1;
   color: #FFFFFF;
@@ -161,6 +165,10 @@
   color: #FFFFFF;
 }
 
+.sidebar-link.active .sidebar-icon path {
+  stroke: #FFFFFF;
+}
+
 .sidebar-icon {
   width: 20px;
   height: 20px;
@@ -168,17 +176,34 @@
   color: #FFFFFF;
 }
 
+.sidebar-icon path {
+  stroke: currentColor;
+  stroke-width: 2;
+}
+
 /* Specific icon colors matching source CRM */
 .sidebar-link[data-icon="notifications"] .sidebar-icon {
   color: #FBBF24;
+}
+
+.sidebar-link[data-icon="notifications"] .sidebar-icon path {
+  stroke: #FBBF24;
 }
 
 .sidebar-link[data-icon="suggestions"] .sidebar-icon {
   color: #FCD34D;
 }
 
+.sidebar-link[data-icon="suggestions"] .sidebar-icon path {
+  stroke: #FCD34D;
+}
+
 .sidebar-link[data-icon="issues"] .sidebar-icon {
   color: #10B981;
+}
+
+.sidebar-link[data-icon="issues"] .sidebar-icon path {
+  stroke: #10B981;
 }
 
 /* Override icon colors when active */
@@ -186,6 +211,12 @@
 .sidebar-link.active[data-icon="suggestions"] .sidebar-icon,
 .sidebar-link.active[data-icon="issues"] .sidebar-icon {
   color: #FFFFFF;
+}
+
+.sidebar-link.active[data-icon="notifications"] .sidebar-icon path,
+.sidebar-link.active[data-icon="suggestions"] .sidebar-icon path,
+.sidebar-link.active[data-icon="issues"] .sidebar-icon path {
+  stroke: #FFFFFF;
 }
 
 .sidebar-label {
