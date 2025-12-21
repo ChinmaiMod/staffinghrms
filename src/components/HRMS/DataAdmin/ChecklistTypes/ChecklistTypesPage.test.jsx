@@ -65,7 +65,9 @@ const mockChecklistTypes = [
   },
 ]
 
-const createQueryBuilder = () => {
+let callCount = 0
+
+const createQueryBuilder = (responseData) => {
   const builder = {
     select: vi.fn(() => builder),
     eq: vi.fn(() => builder),
@@ -73,33 +75,53 @@ const createQueryBuilder = () => {
     maybeSingle: vi.fn(() => Promise.resolve({ data: null, error: null })),
     single: vi.fn(() => Promise.resolve({ data: null, error: null })),
   }
+  
+  // Make builder thenable (awaitable) - this is how Supabase works
+  builder.then = vi.fn((resolve) => {
+    return Promise.resolve(responseData).then(resolve)
+  })
+  builder.catch = vi.fn((reject) => {
+    return Promise.resolve(responseData).catch(reject)
+  })
+  
   return builder
 }
 
 vi.mock('../../../../api/supabaseClient', () => {
-  const mockFrom = vi.fn(() => {
-    const builder = createQueryBuilder()
-    // Mock checklist types query
-    if (mockFrom.mock.calls.length === 1) {
-      builder.select.mockResolvedValue({
+  const mockFrom = vi.fn((table) => {
+    callCount++
+    
+    // First call: checklist types query from hrms_checklist_types
+    if (callCount === 1 && table === 'hrms_checklist_types') {
+      return createQueryBuilder({
         data: mockChecklistTypes,
         error: null,
       })
     }
-    // Mock template count queries
-    else {
-      builder.select.mockResolvedValue({
+    
+    // Subsequent calls: template count queries from hrms_checklist_templates
+    // These use select with count option
+    if (table === 'hrms_checklist_templates') {
+      return createQueryBuilder({
         data: null,
         error: null,
         count: 4,
       })
     }
-    return builder
+    
+    // Default fallback
+    return createQueryBuilder({
+      data: null,
+      error: null,
+    })
   })
 
   return {
     supabase: {
       from: mockFrom,
+      auth: {
+        getUser: vi.fn().mockResolvedValue({ data: { user: null }, error: null }),
+      },
     },
   }
 })
@@ -111,6 +133,7 @@ const TestWrapper = ({ children }) => <BrowserRouter>{children}</BrowserRouter>
 describe('ChecklistTypesPage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    callCount = 0 // Reset call count before each test
   })
 
   it('renders loading state initially', () => {

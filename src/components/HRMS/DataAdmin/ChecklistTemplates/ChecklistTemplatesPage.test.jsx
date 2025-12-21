@@ -74,31 +74,32 @@ let callCount = 0
 
 vi.mock('../../../../api/supabaseClient', () => {
   const createQueryBuilder = (table) => {
+    let responseData = { data: null, error: null }
+    
+    // Set response based on table
+    if (table === 'hrms_checklist_types') {
+      responseData = { data: mockChecklistTypes, error: null }
+    } else if (table === 'hrms_checklist_templates') {
+      responseData = { data: mockTemplates, error: null }
+    } else if (table === 'hrms_checklist_items') {
+      responseData = { data: null, error: null, count: 5 }
+    }
+    
     const builder = {
       select: vi.fn(() => builder),
       eq: vi.fn(() => builder),
       order: vi.fn(() => builder),
       single: vi.fn(() => Promise.resolve({ data: null, error: null })),
+      maybeSingle: vi.fn(() => Promise.resolve({ data: null, error: null })),
     }
-
-    // Resolve based on table and call count
-    if (table === 'hrms_checklist_types') {
-      builder.select.mockResolvedValue({
-        data: mockChecklistTypes,
-        error: null,
-      })
-    } else if (table === 'hrms_checklist_templates') {
-      builder.order.mockResolvedValue({
-        data: mockTemplates,
-        error: null,
-      })
-    } else if (table === 'hrms_checklist_items') {
-      builder.select.mockResolvedValue({
-        data: null,
-        error: null,
-        count: 5,
-      })
-    }
+    
+    // Make builder thenable (awaitable) - this is how Supabase works
+    builder.then = vi.fn((resolve) => {
+      return Promise.resolve(responseData).then(resolve)
+    })
+    builder.catch = vi.fn((reject) => {
+      return Promise.resolve(responseData).catch(reject)
+    })
 
     return builder
   }
@@ -111,6 +112,9 @@ vi.mock('../../../../api/supabaseClient', () => {
   return {
     supabase: {
       from: mockFrom,
+      auth: {
+        getUser: vi.fn().mockResolvedValue({ data: { user: null }, error: null }),
+      },
     },
   }
 })

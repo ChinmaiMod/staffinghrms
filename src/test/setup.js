@@ -6,6 +6,43 @@ process.env.VITE_SUPABASE_URL = 'https://test-project.supabase.co'
 process.env.VITE_SUPABASE_ANON_KEY = 'test-anon-key'
 
 // Mock Supabase client before any imports
+// Create a chainable mock object that properly supports method chaining
+// In Supabase, the builder is thenable (can be awaited directly)
+const createChainableMock = () => {
+  const chain = {}
+  
+  // Default response
+  let responseData = { data: null, error: null }
+  
+  // All chainable methods return the chain itself
+  const chainableMethods = [
+    'select', 'insert', 'update', 'delete', 'eq', 'neq', 'gt', 'gte', 'lt', 'lte',
+    'like', 'ilike', 'is', 'in', 'contains', 'containedBy', 'rangeGt', 'rangeGte',
+    'rangeLt', 'rangeLte', 'rangeAdjacent', 'overlaps', 'textSearch', 'match',
+    'not', 'or', 'filter', 'order', 'limit', 'range', 'abortSignal', 'returns',
+    'upsert', 'onConflict'
+  ]
+  
+  chainableMethods.forEach(method => {
+    chain[method] = vi.fn(() => chain)
+  })
+  
+  // Terminal methods that return promises
+  chain.single = vi.fn().mockResolvedValue({ data: null, error: null })
+  chain.maybeSingle = vi.fn().mockResolvedValue({ data: null, error: null })
+  
+  // Make the chain thenable so it can be awaited directly
+  // When you await the chain after chaining methods, it resolves to the response
+  chain.then = vi.fn((resolve) => {
+    return Promise.resolve(responseData).then(resolve)
+  })
+  chain.catch = vi.fn((reject) => {
+    return Promise.resolve(responseData).catch(reject)
+  })
+  
+  return chain
+}
+
 vi.mock('../api/supabaseClient', () => ({
   supabase: {
     auth: {
@@ -15,44 +52,7 @@ vi.mock('../api/supabaseClient', () => ({
       signOut: vi.fn().mockResolvedValue({ error: null }),
       getUser: vi.fn().mockResolvedValue({ data: { user: null }, error: null }),
     },
-    from: vi.fn().mockReturnValue({
-      select: vi.fn().mockReturnThis(),
-      insert: vi.fn().mockReturnThis(),
-      update: vi.fn().mockReturnThis(),
-      delete: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      neq: vi.fn().mockReturnThis(),
-      gt: vi.fn().mockReturnThis(),
-      gte: vi.fn().mockReturnThis(),
-      lt: vi.fn().mockReturnThis(),
-      lte: vi.fn().mockReturnThis(),
-      like: vi.fn().mockReturnThis(),
-      ilike: vi.fn().mockReturnThis(),
-      is: vi.fn().mockReturnThis(),
-      in: vi.fn().mockReturnThis(),
-      contains: vi.fn().mockReturnThis(),
-      containedBy: vi.fn().mockReturnThis(),
-      rangeGt: vi.fn().mockReturnThis(),
-      rangeGte: vi.fn().mockReturnThis(),
-      rangeLt: vi.fn().mockReturnThis(),
-      rangeLte: vi.fn().mockReturnThis(),
-      rangeAdjacent: vi.fn().mockReturnThis(),
-      overlaps: vi.fn().mockReturnThis(),
-      textSearch: vi.fn().mockReturnThis(),
-      match: vi.fn().mockReturnThis(),
-      not: vi.fn().mockReturnThis(),
-      or: vi.fn().mockReturnThis(),
-      filter: vi.fn().mockReturnThis(),
-      single: vi.fn().mockResolvedValue({ data: null, error: null }),
-      maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
-      order: vi.fn().mockReturnThis(),
-      limit: vi.fn().mockReturnThis(),
-      range: vi.fn().mockReturnThis(),
-      abortSignal: vi.fn().mockReturnThis(),
-      returns: vi.fn().mockReturnThis(),
-      upsert: vi.fn().mockReturnThis(),
-      onConflict: vi.fn().mockReturnThis(),
-    }),
+    from: vi.fn(() => createChainableMock()),
     storage: {
       from: vi.fn().mockReturnValue({
         upload: vi.fn().mockResolvedValue({ data: null, error: null }),

@@ -6,25 +6,43 @@ import { render, screen, waitFor, fireEvent } from '@testing-library/react'
 import { BrowserRouter } from 'react-router-dom'
 
 // Mock Supabase
-vi.mock('../../../../api/supabaseClient', () => ({
-  supabase: {
-    from: vi.fn(() => ({
-      select: vi.fn().mockResolvedValue({
-        data: [{ id: 'test-id' }],
-        error: null,
+vi.mock('../../../../api/supabaseClient', () => {
+  const createQueryBuilder = (responseData = { data: null, error: null }) => {
+    const builder = {
+      select: vi.fn(() => builder),
+      insert: vi.fn(() => builder),
+      update: vi.fn(() => builder),
+      eq: vi.fn(() => builder),
+      single: vi.fn(() => Promise.resolve({ data: null, error: null })),
+      maybeSingle: vi.fn(() => Promise.resolve({ data: null, error: null })),
+    }
+    
+    // Make builder thenable (awaitable) - this is how Supabase works
+    builder.then = vi.fn((resolve) => {
+      return Promise.resolve(responseData).then(resolve)
+    })
+    builder.catch = vi.fn((reject) => {
+      return Promise.resolve(responseData).catch(reject)
+    })
+    
+    return builder
+  }
+  
+  return {
+    supabase: {
+      from: vi.fn((table) => {
+        // Return different data based on table
+        if (table === 'hrms_checklist_types') {
+          return createQueryBuilder({ data: [{ id: 'test-id' }], error: null })
+        }
+        return createQueryBuilder({ data: null, error: null })
       }),
-      insert: vi.fn().mockResolvedValue({
-        data: null,
-        error: null,
-      }),
-      update: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockResolvedValue({
-        data: null,
-        error: null,
-      }),
-    })),
-  },
-}))
+      auth: {
+        getUser: vi.fn().mockResolvedValue({ data: { user: null }, error: null }),
+      },
+    },
+  }
+})
 
 vi.mock('../../../../utils/validators', () => ({
   validateTextField: vi.fn((value, fieldName, options) => {

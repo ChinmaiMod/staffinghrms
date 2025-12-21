@@ -52,28 +52,35 @@ const mockLCAJobTitles = [
 ]
 
 vi.mock('../../../../api/supabaseClient', () => {
-  const createQueryBuilder = () => {
+  const createQueryBuilder = (responseData = { data: mockLCAJobTitles, error: null }) => {
     const builder = {
       select: vi.fn(() => builder),
       eq: vi.fn(() => builder),
       delete: vi.fn(() => builder),
       order: vi.fn(() => builder),
+      insert: vi.fn(() => builder),
+      update: vi.fn(() => builder),
+      single: vi.fn(() => Promise.resolve({ data: null, error: null })),
+      maybeSingle: vi.fn(() => Promise.resolve({ data: null, error: null })),
     }
-    // Make order() resolve with data on final call
-    builder.order.mockResolvedValue({
-      data: mockLCAJobTitles,
-      error: null,
+    
+    // Make builder thenable (awaitable) - this is how Supabase works
+    builder.then = vi.fn((resolve) => {
+      return Promise.resolve(responseData).then(resolve)
     })
-    builder.delete.mockResolvedValue({
-      data: null,
-      error: null,
+    builder.catch = vi.fn((reject) => {
+      return Promise.resolve(responseData).catch(reject)
     })
+    
     return builder
   }
 
   return {
     supabase: {
       from: vi.fn(() => createQueryBuilder()),
+      auth: {
+        getUser: vi.fn().mockResolvedValue({ data: { user: null }, error: null }),
+      },
     },
   }
 })
