@@ -549,7 +549,8 @@ function RBACAdministration() {
         item_path: menuItemForm.item_path || null,
         icon: menuItemForm.icon || null,
         display_order: parseInt(menuItemForm.display_order, 10),
-        is_active: menuItemForm.is_active
+        is_active: menuItemForm.is_active,
+        application_code: APPLICATION_CODE // Ensure menu items are scoped to HRMS
       };
 
       if (editingMenuItem) {

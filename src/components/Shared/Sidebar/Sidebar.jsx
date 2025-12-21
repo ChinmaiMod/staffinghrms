@@ -1,4 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom'
+import { useMemo } from 'react'
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -19,6 +20,7 @@ import {
   ProfileIcon,
 } from './ColorfulIcons'
 import { BellIcon, LightBulbIcon, BugAntIcon } from '@heroicons/react/24/outline'
+import { usePermissions } from '../../../contexts/PermissionsProvider'
 import './Sidebar.css'
 
 const menuItems = [
@@ -125,13 +127,44 @@ const menuItems = [
 /**
  * Sidebar navigation component
  * Supports collapsed/expanded states with icons and labels
+ * Filters menu items based on user permissions
  */
 function Sidebar({ collapsed, onToggle }) {
   const location = useLocation()
+  const { hasMenuAccess, roleLevel, loading: permissionsLoading } = usePermissions()
 
   const isActive = (path) => {
     return location.pathname.startsWith(path)
   }
+
+  // Filter menu items based on permissions
+  // Super admin (level 5) sees all items
+  // Others only see items they have permission for
+  const filteredMenuItems = useMemo(() => {
+    if (permissionsLoading) {
+      return []
+    }
+
+    // Super admin sees everything
+    if (roleLevel === 5) {
+      return menuItems
+    }
+
+    // Filter menu items based on permissions
+    return menuItems.filter(item => {
+      if (item.type === 'divider') {
+        return true // Keep dividers
+      }
+
+      // Extract path or code from menu item
+      // Try to match by path first, then by id (which might match item_code)
+      const path = item.path
+      const code = item.id?.toUpperCase()
+
+      // Check permission by path or code
+      return hasMenuAccess(path) || hasMenuAccess(code)
+    })
+  }, [hasMenuAccess, roleLevel, permissionsLoading])
 
   return (
     <aside 
@@ -163,7 +196,7 @@ function Sidebar({ collapsed, onToggle }) {
       {/* Navigation Menu */}
       <nav className="sidebar-nav">
         <ul className="sidebar-menu" role="list">
-          {menuItems.map((item, index) => {
+          {filteredMenuItems.map((item, index) => {
             if (item.type === 'divider') {
               return <li key={`divider-${index}`} className="sidebar-divider" role="separator" />
             }

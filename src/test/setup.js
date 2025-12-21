@@ -21,9 +21,37 @@ vi.mock('../api/supabaseClient', () => ({
       update: vi.fn().mockReturnThis(),
       delete: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
+      neq: vi.fn().mockReturnThis(),
+      gt: vi.fn().mockReturnThis(),
+      gte: vi.fn().mockReturnThis(),
+      lt: vi.fn().mockReturnThis(),
+      lte: vi.fn().mockReturnThis(),
+      like: vi.fn().mockReturnThis(),
+      ilike: vi.fn().mockReturnThis(),
+      is: vi.fn().mockReturnThis(),
+      in: vi.fn().mockReturnThis(),
+      contains: vi.fn().mockReturnThis(),
+      containedBy: vi.fn().mockReturnThis(),
+      rangeGt: vi.fn().mockReturnThis(),
+      rangeGte: vi.fn().mockReturnThis(),
+      rangeLt: vi.fn().mockReturnThis(),
+      rangeLte: vi.fn().mockReturnThis(),
+      rangeAdjacent: vi.fn().mockReturnThis(),
+      overlaps: vi.fn().mockReturnThis(),
+      textSearch: vi.fn().mockReturnThis(),
+      match: vi.fn().mockReturnThis(),
+      not: vi.fn().mockReturnThis(),
+      or: vi.fn().mockReturnThis(),
+      filter: vi.fn().mockReturnThis(),
       single: vi.fn().mockResolvedValue({ data: null, error: null }),
+      maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
       order: vi.fn().mockReturnThis(),
       limit: vi.fn().mockReturnThis(),
+      range: vi.fn().mockReturnThis(),
+      abortSignal: vi.fn().mockReturnThis(),
+      returns: vi.fn().mockReturnThis(),
+      upsert: vi.fn().mockReturnThis(),
+      onConflict: vi.fn().mockReturnThis(),
     }),
     storage: {
       from: vi.fn().mockReturnValue({
@@ -32,6 +60,42 @@ vi.mock('../api/supabaseClient', () => ({
       }),
     },
   },
+}))
+
+// Mock PermissionsProvider - default mock for all tests
+vi.mock('../contexts/PermissionsProvider', () => ({
+  usePermissions: vi.fn(() => ({
+    loading: false,
+    error: null,
+    permissions: {
+      role_level: 5, // Super admin by default in tests
+      role_code: 'CEO',
+      can_create_records: true,
+      can_edit_all_records: true,
+      can_delete_all_records: true,
+      can_view_all_records: true,
+    },
+    roleLevel: 5,
+    roleCode: 'CEO',
+    clientPermissions: {
+      canViewSection: true,
+      canAccessDashboard: true,
+      canAccessInfo: true,
+      canAccessJobOrders: true,
+      canViewLinkedContacts: true,
+      canCreateClients: true,
+      canEditClients: true,
+      canDeleteClients: true,
+      canCreateJobOrders: true,
+      canEditJobOrders: true,
+      canDeleteJobOrders: true,
+    },
+    menuPermissions: {},
+    menuItems: [],
+    hasMenuAccess: vi.fn(() => true), // Default to allowing all menu access
+    refresh: vi.fn(),
+  })),
+  PermissionsProvider: ({ children }) => children,
 }))
 
 // Mock window.matchMedia

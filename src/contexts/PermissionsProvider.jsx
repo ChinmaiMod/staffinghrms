@@ -73,33 +73,82 @@ export function PermissionsProvider({ children }) {
     loading: Boolean(user),
     error: null,
     permissions: null,
+    menuPermissions: null, // Map of menu_item_id -> can_access
+    menuItems: null, // List of menu items with their paths/codes
   })
 
   const fetchPermissions = useCallback(async () => {
     if (!user?.id) {
-      setState({ loading: false, error: null, permissions: null })
+      setState({ loading: false, error: null, permissions: null, menuPermissions: null, menuItems: null })
       return
     }
 
     try {
       setState((prev) => ({ ...prev, loading: true, error: null }))
 
-      const { data, error } = await supabase
+      // Fetch user permissions (role-level permissions)
+      const { data: permissionsData, error: permissionsError } = await supabase
         .from('user_permissions')
         .select('*')
         .eq('user_id', user.id)
         .maybeSingle()
 
-      if (error) throw error
+      if (permissionsError) throw permissionsError
 
-      if (!data) {
+      if (!permissionsData) {
         throw new Error('No active role assignment found for this user.')
       }
 
-      setState({ loading: false, error: null, permissions: data })
+      // Fetch menu permissions for the user's role
+      // Get role_id from user_permissions
+      const roleId = permissionsData.role_id
+      
+      let menuPermissionsMap = {}
+      let menuItemsList = []
+
+      if (roleId) {
+        // Fetch menu items for HRMS application
+        const { data: menuItemsData, error: menuItemsError } = await supabase
+          .from('menu_items')
+          .select('menu_item_id, item_code, item_path, item_name, icon, display_order, is_active')
+          .eq('application_code', 'HRMS')
+          .eq('is_active', true)
+          .order('display_order')
+
+        if (menuItemsError) {
+          logger.warn('Failed to load menu items', menuItemsError)
+        } else {
+          menuItemsList = menuItemsData || []
+        }
+
+        // Fetch role menu permissions
+        const { data: roleMenuPerms, error: menuPermsError } = await supabase
+          .from('role_menu_permissions')
+          .select('menu_item_id, can_access')
+          .eq('role_id', roleId)
+          .eq('can_access', true)
+
+        if (menuPermsError) {
+          logger.warn('Failed to load menu permissions', menuPermsError)
+        } else {
+          // Create a map: menu_item_id -> can_access
+          menuPermissionsMap = (roleMenuPerms || []).reduce((acc, perm) => {
+            acc[perm.menu_item_id] = perm.can_access
+            return acc
+          }, {})
+        }
+      }
+
+      setState({ 
+        loading: false, 
+        error: null, 
+        permissions: permissionsData,
+        menuPermissions: menuPermissionsMap,
+        menuItems: menuItemsList,
+      })
     } catch (error) {
       logger.error('Failed to load permissions', error)
-      setState({ loading: false, error, permissions: null })
+      setState({ loading: false, error, permissions: null, menuPermissions: null, menuItems: null })
     }
   }, [user?.id])
 
@@ -112,6 +161,31 @@ export function PermissionsProvider({ children }) {
     [state.permissions]
   )
 
+  // Helper function to check if user has access to a menu item by path or code
+  const hasMenuAccess = useCallback((pathOrCode) => {
+    if (!state.menuItems || !state.menuPermissions) {
+      return false
+    }
+
+    // If user is super admin (level 5), grant access to all menus
+    if (state.permissions?.role_level === 5) {
+      return true
+    }
+
+    // Find menu item by path or code
+    const menuItem = state.menuItems.find(
+      item => item.item_path === pathOrCode || item.item_code === pathOrCode.toUpperCase()
+    )
+
+    if (!menuItem) {
+      // If menu item not found in database, default to false for security
+      return false
+    }
+
+    // Check if user has permission for this menu item
+    return Boolean(state.menuPermissions[menuItem.menu_item_id])
+  }, [state.menuItems, state.menuPermissions, state.permissions?.role_level])
+
   const value = useMemo(
     () => ({
       loading: state.loading,
@@ -120,9 +194,12 @@ export function PermissionsProvider({ children }) {
       roleLevel: state.permissions?.role_level ?? null,
       roleCode: state.permissions?.role_code ?? null,
       clientPermissions,
+      menuPermissions: state.menuPermissions,
+      menuItems: state.menuItems,
+      hasMenuAccess,
       refresh: fetchPermissions,
     }),
-    [state.loading, state.error, state.permissions, clientPermissions, fetchPermissions]
+    [state.loading, state.error, state.permissions, state.menuPermissions, state.menuItems, clientPermissions, hasMenuAccess, fetchPermissions]
   )
 
   return <PermissionsContext.Provider value={value}>{children}</PermissionsContext.Provider>
