@@ -1,8 +1,5 @@
--- =====================================================
--- Add application_code to RBAC tables for multi-app support
--- =====================================================
--- This allows roles and menu items to be scoped to specific applications (CRM, HRMS, etc.)
--- =====================================================
+-- Immediate fix: Add application_code column to user_roles and menu_items
+-- This migration can be run directly in Supabase SQL Editor if the previous migration wasn't applied
 
 -- Add application_code to user_roles if it doesn't exist
 DO $$ 
@@ -22,6 +19,10 @@ BEGIN
     
     -- Update existing roles to be CRM-scoped
     UPDATE user_roles SET application_code = 'CRM' WHERE application_code IS NULL;
+    
+    -- Add NOT NULL constraint
+    ALTER TABLE user_roles 
+    ALTER COLUMN application_code SET NOT NULL;
   END IF;
 END $$;
 
@@ -43,38 +44,14 @@ BEGIN
     
     -- Update existing menu items to be CRM-scoped
     UPDATE menu_items SET application_code = 'CRM' WHERE application_code IS NULL;
-  END IF;
-END $$;
-
--- Add NOT NULL constraint after setting defaults
-DO $$
-BEGIN
-  -- For user_roles
-  IF EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_schema = 'public'
-    AND table_name = 'user_roles' 
-    AND column_name = 'application_code' 
-    AND is_nullable = 'YES'
-  ) THEN
-    ALTER TABLE user_roles 
-    ALTER COLUMN application_code SET NOT NULL;
-  END IF;
-  
-  -- For menu_items
-  IF EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_schema = 'public'
-    AND table_name = 'menu_items' 
-    AND column_name = 'application_code' 
-    AND is_nullable = 'YES'
-  ) THEN
+    
+    -- Add NOT NULL constraint
     ALTER TABLE menu_items 
     ALTER COLUMN application_code SET NOT NULL;
   END IF;
 END $$;
 
--- Comments
+-- Add comments
 COMMENT ON COLUMN user_roles.application_code IS 'Application scope: CRM, HRMS, etc.';
 COMMENT ON COLUMN menu_items.application_code IS 'Application scope: CRM, HRMS, etc.';
 
