@@ -167,8 +167,8 @@ export function PermissionsProvider({ children }) {
       return false
     }
 
-    // If user is super admin (level 5), grant access to all menus
-    if (state.permissions?.role_level === 5) {
+    // If user is super admin (level 4), grant access to all menus
+    if (state.permissions?.role_level === 4) {
       return true
     }
 

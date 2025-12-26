@@ -7,7 +7,7 @@ import './RBACAdministration.css';
 /**
  * RBAC Administration Component
  * Comprehensive interface for managing Role-Based Access Control
- * Only accessible by CEO (Super Admin) - role_level = 5
+ * Only accessible by CEO (Super Admin) - role_level = 4
  * 
  * HRMS Tier 2 - Application-Scoped Roles
  * These roles are specific to HRMS and do NOT affect CRM access.
@@ -15,10 +15,10 @@ import './RBACAdministration.css';
  * but are filtered by application_code ('HRMS' vs 'CRM').
  * 
  * HRMS Role Hierarchy:
- * - Level 5: CEO (Super Admin) - Full system access
- * - Level 4: Read Only User - View only access
- * - Level 3: HR Specialist / Immigration Specialist - Operations & compliance
- * - Level 2: HR Manager / Immigration Manager - Full department management
+ * - Level 1: Read Only User - View only access
+ * - Level 2: HR Specialist / Immigration Specialist - Operations & compliance
+ * - Level 3: HR Manager / Immigration Manager - Full department management
+ * - Level 4: CEO (Super Admin) - Full system access
  */
 function RBACAdministration() {
   const navigate = useNavigate();
@@ -228,10 +228,10 @@ function RBACAdministration() {
 
   const getRoleLevelName = (level) => {
     const names = {
-      2: 'Level 2 - HR Manager / Immigration Manager',
-      3: 'Level 3 - HR Specialist / Immigration Specialist',
-      4: 'Level 4 - Read Only User',
-      5: 'Level 5 - CEO (Super Admin)'
+      1: 'Level 1 - Read Only User',
+      2: 'Level 2 - HR Specialist / Immigration Specialist',
+      3: 'Level 3 - HR Manager / Immigration Manager',
+      4: 'Level 4 - CEO (Super Admin)'
     };
     return names[level] || `Level ${level}`;
   };
@@ -672,7 +672,7 @@ function RBACAdministration() {
     setRoleFormData({
       role_name: '',
       role_code: '',
-      role_level: 2,
+      role_level: 1,
       description: '',
       can_create_records: false,
       can_edit_own_records: false,
@@ -738,33 +738,33 @@ function RBACAdministration() {
 
   const handlePresetRole = (level) => {
     // HRMS Role Presets:
-    // Level 2: HR Manager / Immigration Manager - Full department management, manage teams
-    // Level 3: HR Specialist / Immigration Specialist - Operations & compliance, create/edit records
-    // Level 4: Read Only User - View only access, no modifications
-    // Level 5: CEO (Super Admin) - Full system access
+    // Level 1: Read Only User - View only access, no modifications
+    // Level 2: HR Specialist / Immigration Specialist - Operations & compliance, create/edit records
+    // Level 3: HR Manager / Immigration Manager - Full department management, manage teams
+    // Level 4: CEO (Super Admin) - Full system access
     const presets = {
-      2: { // HR Manager / Immigration Manager
-        can_create_records: true, can_edit_own_records: true, can_edit_peer_records: true, can_edit_subordinate_records: true,
-        can_edit_all_records: true, can_delete_own_records: true, can_delete_peer_records: true, can_delete_subordinate_records: true,
-        can_delete_all_records: false, can_view_own_records: true, can_view_peer_records: true, can_view_subordinate_records: true,
-        can_view_all_records: true, can_assign_roles: true, can_manage_users: true,
-        can_manage_businesses: false, can_manage_roles: false,
-      },
-      3: { // HR Specialist / Immigration Specialist
-        can_create_records: true, can_edit_own_records: true, can_edit_peer_records: true, can_edit_subordinate_records: false,
-        can_edit_all_records: false, can_delete_own_records: true, can_delete_peer_records: false, can_delete_subordinate_records: false,
-        can_delete_all_records: false, can_view_own_records: true, can_view_peer_records: true, can_view_subordinate_records: false,
-        can_view_all_records: true, can_assign_roles: false, can_manage_users: false,
-        can_manage_businesses: false, can_manage_roles: false,
-      },
-      4: { // Read Only User
+      1: { // Read Only User
         can_create_records: false, can_edit_own_records: false, can_edit_peer_records: false, can_edit_subordinate_records: false,
         can_edit_all_records: false, can_delete_own_records: false, can_delete_peer_records: false, can_delete_subordinate_records: false,
         can_delete_all_records: false, can_view_own_records: true, can_view_peer_records: true, can_view_subordinate_records: true,
         can_view_all_records: true, can_assign_roles: false, can_manage_users: false,
         can_manage_businesses: false, can_manage_roles: false,
       },
-      5: { // CEO (Super Admin)
+      2: { // HR Specialist / Immigration Specialist
+        can_create_records: true, can_edit_own_records: true, can_edit_peer_records: true, can_edit_subordinate_records: false,
+        can_edit_all_records: false, can_delete_own_records: true, can_delete_peer_records: false, can_delete_subordinate_records: false,
+        can_delete_all_records: false, can_view_own_records: true, can_view_peer_records: true, can_view_subordinate_records: false,
+        can_view_all_records: true, can_assign_roles: false, can_manage_users: false,
+        can_manage_businesses: false, can_manage_roles: false,
+      },
+      3: { // HR Manager / Immigration Manager
+        can_create_records: true, can_edit_own_records: true, can_edit_peer_records: true, can_edit_subordinate_records: true,
+        can_edit_all_records: true, can_delete_own_records: true, can_delete_peer_records: true, can_delete_subordinate_records: true,
+        can_delete_all_records: false, can_view_own_records: true, can_view_peer_records: true, can_view_subordinate_records: true,
+        can_view_all_records: true, can_assign_roles: true, can_manage_users: true,
+        can_manage_businesses: false, can_manage_roles: false,
+      },
+      4: { // CEO (Super Admin)
         can_create_records: true, can_edit_own_records: true, can_edit_peer_records: true, can_edit_subordinate_records: true,
         can_edit_all_records: true, can_delete_own_records: true, can_delete_peer_records: true, can_delete_subordinate_records: true,
         can_delete_all_records: true, can_view_own_records: true, can_view_peer_records: true, can_view_subordinate_records: true,
@@ -1473,10 +1473,10 @@ function RBACAdministration() {
                     <select id="role_level" name="role_level" value={roleFormData.role_level}
                       onChange={(e) => { handleRoleInputChange(e); handlePresetRole(parseInt(e.target.value)); }}
                       required disabled={editingRole?.is_system_role}>
-                      <option value={2}>Level 2 - HR Manager / Immigration Manager</option>
-                      <option value={3}>Level 3 - HR Specialist / Immigration Specialist</option>
-                      <option value={4}>Level 4 - Read Only User</option>
-                      <option value={5}>Level 5 - CEO (Super Admin)</option>
+                      <option value={1}>Level 1 - Read Only User</option>
+                      <option value={2}>Level 2 - HR Specialist / Immigration Specialist</option>
+                      <option value={3}>Level 3 - HR Manager / Immigration Manager</option>
+                      <option value={4}>Level 4 - CEO (Super Admin)</option>
                     </select>
                     <small>Selecting a level applies default permissions.</small>
                   </div>

@@ -138,7 +138,7 @@ function Sidebar({ collapsed, onToggle }) {
   }
 
   // Filter menu items based on permissions
-  // Super admin (level 5) sees all items
+  // Super admin (level 4) sees all items
   // Others only see items they have permission for
   const filteredMenuItems = useMemo(() => {
     if (permissionsLoading) {
@@ -146,7 +146,7 @@ function Sidebar({ collapsed, onToggle }) {
     }
 
     // Super admin sees everything
-    if (roleLevel === 5) {
+    if (roleLevel === 4) {
       return menuItems
     }
 

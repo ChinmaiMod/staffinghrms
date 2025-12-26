@@ -9,7 +9,7 @@ const APPLICATION_CODE = 'HRMS';
 
 /**
  * User Roles Management Component
- * Only accessible by CEO/Super Admin (role_level = 5)
+ * Only accessible by CEO/Super Admin (role_level = 4)
  * Allows creation and management of user roles with granular permissions
  */
 function UserRolesManagement() {
@@ -26,7 +26,7 @@ function UserRolesManagement() {
   const [formData, setFormData] = useState({
     role_name: '',
     role_code: '',
-    role_level: 2,
+    role_level: 1,
     description: '',
     can_create_records: false,
     can_edit_own_records: false,
@@ -120,7 +120,7 @@ function UserRolesManagement() {
     setFormData({
       role_name: '',
       role_code: '',
-      role_level: 2,
+      role_level: 1,
       description: '',
       can_create_records: false,
       can_edit_own_records: false,
@@ -275,18 +275,17 @@ function UserRolesManagement() {
 
   const getRoleLevelName = (level) => {
     const levels = {
-      1: 'Level 1 - Read Only',
-      2: 'Level 2 - Recruiter',
-      3: 'Level 3 - Lead',
-      4: 'Level 4 - Manager',
-      5: 'Level 5 - CEO/Super Admin',
+      1: 'Level 1 - Read Only User',
+      2: 'Level 2 - HR Specialist / Immigration Specialist',
+      3: 'Level 3 - HR Manager / Immigration Manager',
+      4: 'Level 4 - CEO (Super Admin)',
     };
     return levels[level] || `Level ${level}`;
   };
 
   const handlePresetRole = (level) => {
     const presets = {
-      1: { // Read Only
+      1: { // Read Only User
         can_create_records: false,
         can_edit_own_records: false,
         can_edit_subordinate_records: false,
@@ -297,15 +296,15 @@ function UserRolesManagement() {
         can_delete_peer_records: false,
         can_delete_all_records: false,
         can_view_own_records: true,
-        can_view_subordinate_records: false,
-        can_view_peer_records: false,
-        can_view_all_records: false,
+        can_view_subordinate_records: true,
+        can_view_peer_records: true,
+        can_view_all_records: true,
         can_assign_roles: false,
         can_manage_users: false,
         can_manage_businesses: false,
         can_manage_roles: false,
       },
-      2: { // Recruiter
+      2: { // HR Specialist / Immigration Specialist
         can_create_records: true,
         can_edit_own_records: true,
         can_edit_subordinate_records: false,
@@ -318,37 +317,18 @@ function UserRolesManagement() {
         can_view_own_records: true,
         can_view_subordinate_records: false,
         can_view_peer_records: true,
-        can_view_all_records: false,
+        can_view_all_records: true,
         can_assign_roles: false,
         can_manage_users: false,
         can_manage_businesses: false,
         can_manage_roles: false,
       },
-      3: { // Lead
+      3: { // HR Manager / Immigration Manager
         can_create_records: true,
         can_edit_own_records: true,
         can_edit_subordinate_records: true,
         can_edit_peer_records: true,
-        can_edit_all_records: false,
-        can_delete_own_records: true,
-        can_delete_subordinate_records: true,
-        can_delete_peer_records: false,
-        can_delete_all_records: false,
-        can_view_own_records: true,
-        can_view_subordinate_records: true,
-        can_view_peer_records: true,
-        can_view_all_records: false,
-        can_assign_roles: true,
-        can_manage_users: false,
-        can_manage_businesses: false,
-        can_manage_roles: false,
-      },
-      4: { // Manager
-        can_create_records: true,
-        can_edit_own_records: true,
-        can_edit_subordinate_records: true,
-        can_edit_peer_records: true,
-        can_edit_all_records: false,
+        can_edit_all_records: true,
         can_delete_own_records: true,
         can_delete_subordinate_records: true,
         can_delete_peer_records: true,
@@ -356,13 +336,13 @@ function UserRolesManagement() {
         can_view_own_records: true,
         can_view_subordinate_records: true,
         can_view_peer_records: true,
-        can_view_all_records: false,
+        can_view_all_records: true,
         can_assign_roles: true,
         can_manage_users: true,
         can_manage_businesses: false,
         can_manage_roles: false,
       },
-      5: { // CEO
+      4: { // CEO (Super Admin)
         can_create_records: true,
         can_edit_own_records: true,
         can_edit_subordinate_records: true,
@@ -545,11 +525,10 @@ function UserRolesManagement() {
                       required
                       disabled={editingRole?.is_system_role}
                     >
-                      <option value={1}>Level 1 - Read Only</option>
-                      <option value={2}>Level 2 - Recruiter</option>
-                      <option value={3}>Level 3 - Lead</option>
-                      <option value={4}>Level 4 - Manager</option>
-                      <option value={5}>Level 5 - CEO/Super Admin</option>
+                      <option value={1}>Level 1 - Read Only User</option>
+                      <option value={2}>Level 2 - HR Specialist / Immigration Specialist</option>
+                      <option value={3}>Level 3 - HR Manager / Immigration Manager</option>
+                      <option value={4}>Level 4 - CEO (Super Admin)</option>
                     </select>
                     <small>Selecting a level applies default permissions. You can customize them below.</small>
                   </div>

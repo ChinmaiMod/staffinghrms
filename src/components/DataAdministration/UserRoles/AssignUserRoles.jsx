@@ -53,10 +53,10 @@ const AssignUserRoles = () => {
 
   const loadRoles = useCallback(async (currentUserLevel) => {
     // Only load roles that the current user can assign
-    // CEO (level 5) can assign all roles
-    // Manager (level 4) can assign levels 1-3
-    // Lead (level 3) can assign levels 1-2
-    const maxLevel = currentUserLevel === 5 ? 5 : currentUserLevel - 1;
+    // CEO (level 4) can assign all roles
+    // Manager (level 3) can assign levels 1-2
+    // Specialist (level 2) can assign level 1
+    const maxLevel = currentUserLevel === 4 ? 4 : currentUserLevel - 1;
 
     const { data, error } = await supabase
       .from('user_roles')
@@ -408,8 +408,7 @@ const AssignUserRoles = () => {
       1: 'role-level-1',
       2: 'role-level-2',
       3: 'role-level-3',
-      4: 'role-level-4',
-      5: 'role-level-5'
+      4: 'role-level-4'
     };
     return classes[level] || '';
   };

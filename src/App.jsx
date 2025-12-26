@@ -46,8 +46,8 @@ function PermissionProtectedRoute({ children, path }) {
     return <LoadingSpinner fullScreen message="Loading permissions..." />
   }
   
-  // Super admin (level 5) has access to everything
-  if (roleLevel === 5) {
+  // Super admin (level 4) has access to everything
+  if (roleLevel === 4) {
     return children
   }
   

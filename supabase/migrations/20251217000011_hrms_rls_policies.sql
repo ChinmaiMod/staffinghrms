@@ -68,7 +68,7 @@ BEGIN
     SELECT 1 
     FROM profiles 
     WHERE id = auth.uid() 
-      AND role_level >= 5
+      AND role_level >= 4
   );
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
