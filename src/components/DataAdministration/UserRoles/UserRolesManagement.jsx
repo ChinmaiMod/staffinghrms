@@ -9,7 +9,7 @@ const APPLICATION_CODE = 'HRMS';
 
 /**
  * User Roles Management Component
- * Only accessible by CEO/Super Admin (role_level = 4)
+ * Only accessible by CEO/Super Admin (role_level = 5)
  * Allows creation and management of user roles with granular permissions
  */
 function UserRolesManagement() {
@@ -278,7 +278,8 @@ function UserRolesManagement() {
       1: 'Level 1 - Read Only User',
       2: 'Level 2 - HR Specialist / Immigration Specialist',
       3: 'Level 3 - HR Manager / Immigration Manager',
-      4: 'Level 4 - CEO (Super Admin)',
+      4: 'Level 4 - HR Administrator',
+      5: 'Level 5 - CEO (Super Admin)',
     };
     return levels[level] || `Level ${level}`;
   };
@@ -342,7 +343,26 @@ function UserRolesManagement() {
         can_manage_businesses: false,
         can_manage_roles: false,
       },
-      4: { // CEO (Super Admin)
+      4: { // HR Administrator
+        can_create_records: true,
+        can_edit_own_records: true,
+        can_edit_subordinate_records: true,
+        can_edit_peer_records: true,
+        can_edit_all_records: true,
+        can_delete_own_records: true,
+        can_delete_subordinate_records: true,
+        can_delete_peer_records: true,
+        can_delete_all_records: true,
+        can_view_own_records: true,
+        can_view_subordinate_records: true,
+        can_view_peer_records: true,
+        can_view_all_records: true,
+        can_assign_roles: true,
+        can_manage_users: true,
+        can_manage_businesses: false,
+        can_manage_roles: true,
+      },
+      5: { // CEO (Super Admin)
         can_create_records: true,
         can_edit_own_records: true,
         can_edit_subordinate_records: true,
@@ -528,7 +548,8 @@ function UserRolesManagement() {
                       <option value={1}>Level 1 - Read Only User</option>
                       <option value={2}>Level 2 - HR Specialist / Immigration Specialist</option>
                       <option value={3}>Level 3 - HR Manager / Immigration Manager</option>
-                      <option value={4}>Level 4 - CEO (Super Admin)</option>
+                      <option value={4}>Level 4 - HR Administrator</option>
+                      <option value={5}>Level 5 - CEO (Super Admin)</option>
                     </select>
                     <small>Selecting a level applies default permissions. You can customize them below.</small>
                   </div>

@@ -145,8 +145,8 @@ function Sidebar({ collapsed, onToggle }) {
       return []
     }
 
-    // Super admin sees everything
-    if (roleLevel === 4) {
+    // Super admin (level 5) sees everything
+    if (roleLevel === 5) {
       return menuItems
     }
 

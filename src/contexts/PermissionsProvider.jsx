@@ -163,12 +163,18 @@ export function PermissionsProvider({ children }) {
 
   // Helper function to check if user has access to a menu item by path or code
   const hasMenuAccess = useCallback((pathOrCode) => {
-    if (!state.menuItems || !state.menuPermissions) {
-      return false
+    // If user is super admin (level 5), grant access to all menus
+    if (state.permissions?.role_level === 5) {
+      return true
     }
 
-    // If user is super admin (level 4), grant access to all menus
-    if (state.permissions?.role_level === 4) {
+    // If no menu items are loaded yet, allow access (fallback during loading/migration)
+    if (!state.menuItems || state.menuItems.length === 0) {
+      return true
+    }
+
+    // If no menu permissions map exists, allow access (fallback for roles without permissions set up)
+    if (!state.menuPermissions) {
       return true
     }
 

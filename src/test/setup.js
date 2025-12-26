@@ -68,14 +68,14 @@ vi.mock('../contexts/PermissionsProvider', () => ({
     loading: false,
     error: null,
     permissions: {
-      role_level: 4, // Super admin by default in tests
+      role_level: 5, // Super admin by default in tests
       role_code: 'CEO',
       can_create_records: true,
       can_edit_all_records: true,
       can_delete_all_records: true,
       can_view_all_records: true,
     },
-    roleLevel: 4,
+    roleLevel: 5,
     roleCode: 'CEO',
     clientPermissions: {
       canViewSection: true,
