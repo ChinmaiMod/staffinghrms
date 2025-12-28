@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useTenant } from '../../../contexts/TenantProvider'
 import { useAuth } from '../../../contexts/AuthProvider'
+import { supabase } from '../../../api/supabaseClient'
 import LoadingSpinner from '../../Shared/LoadingSpinner'
 import {
   ArrowLeftIcon,
@@ -14,6 +15,7 @@ import {
   ChevronRightIcon,
   DocumentTextIcon,
   IdentificationIcon,
+  BookmarkIcon,
 } from '@heroicons/react/24/outline'
 import './EmployeeForm.css'
 
@@ -164,13 +166,16 @@ function EmployeeForm({ testMode = false }) {
   // State
   const [loading, setLoading] = useState(testMode ? false : !!employeeId)
   const [saving, setSaving] = useState(false)
+  const [savingProgress, setSavingProgress] = useState(false)
   const [error, setError] = useState(null)
+  const [successMessage, setSuccessMessage] = useState(null)
   const [currentStep, setCurrentStep] = useState(0)
   const [formData, setFormData] = useState(getInitialFormData())
   const [validationErrors, setValidationErrors] = useState({})
   const [touchedFields, setTouchedFields] = useState({})
+  const [savedEmployeeId, setSavedEmployeeId] = useState(employeeId || null)
 
-  const isEditMode = !!employeeId
+  const isEditMode = !!employeeId || !!savedEmployeeId
 
   // Memoized filtered states/cities based on selections
   const filteredStates = useMemo(() => {
@@ -215,28 +220,88 @@ function EmployeeForm({ testMode = false }) {
           department_id: '1',
           job_title_id: '2',
         })
+        setSavedEmployeeId('test-employee-id')
         setLoading(false)
         return
       }
       setLoading(true)
-      // TODO: Replace with actual Supabase query
-      // ...
-      await new Promise(resolve => setTimeout(resolve, 500))
-      setFormData({
-        ...getInitialFormData(),
-        first_name: 'John',
-        last_name: 'Smith',
-        email: 'john.smith@company.com',
-        phone: '+1 (555) 123-4567',
-        employee_type: 'it_usa',
-        employment_status: 'active',
-        start_date: '2024-01-15',
-        department_id: '1',
-        job_title_id: '2',
-      })
+      
+      if (!employeeId || !tenant?.tenant_id) {
+        setLoading(false)
+        return
+      }
+
+      // Fetch employee data
+      const { data: employee, error: empError } = await supabase
+        .from('hrms_employees')
+        .select('*')
+        .eq('employee_id', employeeId)
+        .eq('tenant_id', tenant.tenant_id)
+        .single()
+
+      if (empError) throw empError
+
+      if (employee) {
+        setSavedEmployeeId(employee.employee_id)
+        
+        // Fetch addresses
+        const { data: addresses, error: addrError } = await supabase
+          .from('hrms_employee_addresses')
+          .select('*')
+          .eq('employee_id', employeeId)
+          .eq('tenant_id', tenant.tenant_id)
+          .order('is_current', { ascending: false })
+          .order('valid_from', { ascending: false })
+
+        if (addrError) throw addrError
+
+        // Find current and permanent addresses
+        const currentAddr = addresses?.find(a => a.address_type === 'current' && a.is_current)
+        const permanentAddr = addresses?.find(a => a.address_type === 'permanent')
+
+        setFormData({
+          ...getInitialFormData(),
+          first_name: employee.first_name || '',
+          middle_name: employee.middle_name || '',
+          last_name: employee.last_name || '',
+          email: employee.email || '',
+          phone: employee.phone || '',
+          date_of_birth: employee.date_of_birth || '',
+          date_of_birth_as_per_record: employee.date_of_birth_as_per_record || '',
+          ssn: employee.ssn_encrypted ? '****' : '',
+          employee_type: employee.employee_type || '',
+          department_id: (() => {
+            // Map department name back to department_id
+            if (employee.department) {
+              const dept = DEPARTMENTS.find(d => d.name === employee.department)
+              return dept?.id || ''
+            }
+            return ''
+          })(),
+          job_title_id: employee.job_title_id || '',
+          lca_job_title_id: employee.lca_job_title_id || '',
+          employment_status: employee.employment_status || 'active',
+          start_date: employee.start_date || '',
+          end_date: employee.end_date || '',
+          // Address data
+          current_street_address_1: currentAddr?.street_address_1 || '',
+          current_street_address_2: currentAddr?.street_address_2 || '',
+          current_city_id: currentAddr?.city_id || '',
+          current_state_id: currentAddr?.state_id || '',
+          current_country_id: currentAddr?.country_id || '',
+          current_postal_code: currentAddr?.postal_code || '',
+          permanent_street_address_1: permanentAddr?.street_address_1 || '',
+          permanent_street_address_2: permanentAddr?.street_address_2 || '',
+          permanent_city_id: permanentAddr?.city_id || '',
+          permanent_state_id: permanentAddr?.state_id || '',
+          permanent_country_id: permanentAddr?.country_id || '',
+          permanent_postal_code: permanentAddr?.postal_code || '',
+          permanent_same_as_current: false,
+        })
+      }
     } catch (err) {
       console.error('Error fetching employee:', err)
-      setError(err.message)
+      setError(err.message || 'Failed to load employee')
     } finally {
       setLoading(false)
     }
@@ -410,6 +475,245 @@ function EmployeeForm({ testMode = false }) {
     }
   }
 
+  // Save progress - partial save for current step
+  const handleSaveProgress = async () => {
+    if (!tenant?.tenant_id) {
+      setError('Tenant information is required')
+      return
+    }
+
+    // Validate current step (but allow partial saves even with some missing fields)
+    const stepErrors = validateStep(currentStep)
+    
+    // For partial saves, we only require minimal fields to create an employee
+    // Step 0: first_name, last_name, email (required for employee creation)
+    // Step 1: Can save addresses even if incomplete
+    // Step 2: Can save employment info even if incomplete
+    
+    if (currentStep === 0) {
+      // For basic info, we need at least first_name, last_name, email to create employee
+      if (!formData.first_name?.trim() || !formData.last_name?.trim() || !formData.email?.trim()) {
+        setValidationErrors(stepErrors)
+        setError('First name, last name, and email are required to save progress')
+        return
+      }
+      if (stepErrors.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+        setValidationErrors(stepErrors)
+        setError('Please enter a valid email address')
+        return
+      }
+    }
+
+    try {
+      setSavingProgress(true)
+      setError(null)
+      setSuccessMessage(null)
+
+      const employeeIdToUse = savedEmployeeId || employeeId
+      let finalEmployeeId = employeeIdToUse
+
+      // Prepare employee data based on current step
+      const employeeData = {
+        tenant_id: tenant.tenant_id,
+        business_id: selectedBusiness?.business_id || null,
+        updated_by: user?.id || null,
+      }
+
+      // Add fields from current step
+      if (currentStep === 0) {
+        // Basic Information
+        employeeData.first_name = formData.first_name?.trim() || null
+        employeeData.last_name = formData.last_name?.trim() || null
+        employeeData.middle_name = formData.middle_name?.trim() || null
+        employeeData.email = formData.email?.trim() || null
+        employeeData.phone = formData.phone?.trim() || null
+        employeeData.date_of_birth = formData.date_of_birth || null
+        employeeData.date_of_birth_as_per_record = formData.date_of_birth_as_per_record || null
+        if (formData.ssn && formData.ssn !== '****') {
+          // In production, this should be encrypted
+          employeeData.ssn_encrypted = formData.ssn
+        }
+      } else if (currentStep === 2) {
+        // Employment Information
+        employeeData.employee_type = formData.employee_type || null
+        // Map department_id to department name
+        const selectedDept = DEPARTMENTS.find(d => d.id === formData.department_id)
+        employeeData.department = selectedDept?.name || formData.department_id || null
+        employeeData.job_title_id = formData.job_title_id || null
+        employeeData.lca_job_title_id = formData.lca_job_title_id || null
+        employeeData.employment_status = formData.employment_status || 'active'
+        employeeData.start_date = formData.start_date || null
+        employeeData.end_date = formData.end_date || null
+      }
+
+      if (employeeIdToUse) {
+        // Update existing employee
+        const { data, error: updateError } = await supabase
+          .from('hrms_employees')
+          .update(employeeData)
+          .eq('employee_id', employeeIdToUse)
+          .eq('tenant_id', tenant.tenant_id)
+          .select()
+          .single()
+
+        if (updateError) throw updateError
+        finalEmployeeId = data.employee_id
+      } else {
+        // Create new employee - need to generate employee_code
+        if (!selectedBusiness?.business_id) {
+          throw new Error('Business selection is required to create an employee')
+        }
+
+        // Generate employee code using database function
+        const { data: codeData, error: codeError } = await supabase
+          .rpc('fn_generate_employee_code', { p_business_id: selectedBusiness.business_id })
+
+        if (codeError) throw codeError
+
+        employeeData.employee_code = codeData
+        employeeData.created_by = user?.id || null
+
+        // Ensure required fields for creation
+        if (!employeeData.first_name || !employeeData.last_name || !employeeData.email) {
+          throw new Error('First name, last name, and email are required to create an employee')
+        }
+
+        // Set defaults for required fields if not provided
+        if (!employeeData.employee_type) {
+          employeeData.employee_type = 'internal_usa' // Default
+        }
+        if (!employeeData.start_date) {
+          employeeData.start_date = new Date().toISOString().split('T')[0] // Today
+        }
+        if (!employeeData.employment_status) {
+          employeeData.employment_status = 'active'
+        }
+
+        const { data, error: insertError } = await supabase
+          .from('hrms_employees')
+          .insert(employeeData)
+          .select()
+          .single()
+
+        if (insertError) throw insertError
+        finalEmployeeId = data.employee_id
+        setSavedEmployeeId(finalEmployeeId)
+        
+        // Update URL if in new mode
+        if (!isEditMode) {
+          navigate(`/hrms/employees/${finalEmployeeId}`, { replace: true })
+        }
+      }
+
+      // Save address data if on address step
+      if (currentStep === 1 && finalEmployeeId) {
+        await saveAddresses(finalEmployeeId)
+      }
+
+      setSuccessMessage('Progress saved successfully')
+      setTimeout(() => setSuccessMessage(null), 3000)
+    } catch (err) {
+      console.error('Error saving progress:', err)
+      setError(err.message || 'Failed to save progress')
+    } finally {
+      setSavingProgress(false)
+    }
+  }
+
+  // Save address data
+  const saveAddresses = async (empId) => {
+    if (!tenant?.tenant_id || !empId) return
+
+    try {
+      // Get existing addresses
+      const { data: existingAddresses } = await supabase
+        .from('hrms_employee_addresses')
+        .select('*')
+        .eq('employee_id', empId)
+        .eq('tenant_id', tenant.tenant_id)
+
+      // Save current address
+      if (formData.current_street_address_1 || formData.current_country_id) {
+        const currentAddrData = {
+          tenant_id: tenant.tenant_id,
+          business_id: selectedBusiness?.business_id || null,
+          employee_id: empId,
+          address_type: 'current',
+          street_address_1: formData.current_street_address_1 || null,
+          street_address_2: formData.current_street_address_2 || null,
+          city_id: formData.current_city_id || null,
+          state_id: formData.current_state_id || null,
+          country_id: formData.current_country_id || null,
+          postal_code: formData.current_postal_code || null,
+          valid_from: new Date().toISOString().split('T')[0],
+          is_current: true,
+          updated_by: user?.id || null,
+        }
+
+        // Mark other current addresses as not current
+        if (existingAddresses) {
+          const otherCurrent = existingAddresses.filter(a => a.address_type === 'current' && a.is_current)
+          for (const addr of otherCurrent) {
+            await supabase
+              .from('hrms_employee_addresses')
+              .update({ is_current: false })
+              .eq('address_id', addr.address_id)
+          }
+        }
+
+        // Insert or update current address
+        const existingCurrent = existingAddresses?.find(a => a.address_type === 'current' && a.is_current)
+        if (existingCurrent) {
+          await supabase
+            .from('hrms_employee_addresses')
+            .update(currentAddrData)
+            .eq('address_id', existingCurrent.address_id)
+        } else {
+          currentAddrData.created_by = user?.id || null
+          await supabase
+            .from('hrms_employee_addresses')
+            .insert(currentAddrData)
+        }
+      }
+
+      // Save permanent address
+      if (!formData.permanent_same_as_current && 
+          (formData.permanent_street_address_1 || formData.permanent_country_id)) {
+        const permanentAddrData = {
+          tenant_id: tenant.tenant_id,
+          business_id: selectedBusiness?.business_id || null,
+          employee_id: empId,
+          address_type: 'permanent',
+          street_address_1: formData.permanent_street_address_1 || null,
+          street_address_2: formData.permanent_street_address_2 || null,
+          city_id: formData.permanent_city_id || null,
+          state_id: formData.permanent_state_id || null,
+          country_id: formData.permanent_country_id || null,
+          postal_code: formData.permanent_postal_code || null,
+          valid_from: new Date().toISOString().split('T')[0],
+          is_current: false,
+          updated_by: user?.id || null,
+        }
+
+        const existingPermanent = existingAddresses?.find(a => a.address_type === 'permanent')
+        if (existingPermanent) {
+          await supabase
+            .from('hrms_employee_addresses')
+            .update(permanentAddrData)
+            .eq('address_id', existingPermanent.address_id)
+        } else {
+          permanentAddrData.created_by = user?.id || null
+          await supabase
+            .from('hrms_employee_addresses')
+            .insert(permanentAddrData)
+        }
+      }
+    } catch (err) {
+      console.error('Error saving addresses:', err)
+      // Don't throw - address save failure shouldn't block progress save
+    }
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     
@@ -425,30 +729,91 @@ function EmployeeForm({ testMode = false }) {
       return
     }
     
+    if (!tenant?.tenant_id) {
+      setError('Tenant information is required')
+      return
+    }
+    
     try {
       setSaving(true)
       setError(null)
       
-      // TODO: Replace with actual Supabase mutation
-      const payload = {
-        ...formData,
-        tenant_id: tenant?.tenant_id,
-        business_id: selectedBusiness?.business_id || null,
-        ...(isEditMode 
-          ? { updated_by: user?.id } 
-          : { created_by: user?.id, updated_by: user?.id }
-        )
-      }
+      const employeeIdToUse = savedEmployeeId || employeeId
       
-      // Simulate API call - TODO: Replace with actual Supabase insert/update
-      console.log('Employee payload:', payload)
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      // Prepare complete employee data
+      const employeeData = {
+        tenant_id: tenant.tenant_id,
+        business_id: selectedBusiness?.business_id || null,
+        first_name: formData.first_name?.trim(),
+        last_name: formData.last_name?.trim(),
+        middle_name: formData.middle_name?.trim() || null,
+        email: formData.email?.trim(),
+        phone: formData.phone?.trim() || null,
+        date_of_birth: formData.date_of_birth || null,
+        date_of_birth_as_per_record: formData.date_of_birth_as_per_record || null,
+        employee_type: formData.employee_type,
+        department: (() => {
+          const selectedDept = DEPARTMENTS.find(d => d.id === formData.department_id)
+          return selectedDept?.name || formData.department_id || null
+        })(),
+        job_title_id: formData.job_title_id || null,
+        lca_job_title_id: formData.lca_job_title_id || null,
+        employment_status: formData.employment_status || 'active',
+        start_date: formData.start_date,
+        end_date: formData.end_date || null,
+        updated_by: user?.id || null,
+      }
+
+      if (formData.ssn && formData.ssn !== '****') {
+        // In production, this should be encrypted
+        employeeData.ssn_encrypted = formData.ssn
+      }
+
+      if (employeeIdToUse) {
+        // Update existing employee
+        const { error: updateError } = await supabase
+          .from('hrms_employees')
+          .update(employeeData)
+          .eq('employee_id', employeeIdToUse)
+          .eq('tenant_id', tenant.tenant_id)
+
+        if (updateError) throw updateError
+      } else {
+        // Create new employee
+        if (!selectedBusiness?.business_id) {
+          throw new Error('Business selection is required to create an employee')
+        }
+
+        // Generate employee code
+        const { data: codeData, error: codeError } = await supabase
+          .rpc('fn_generate_employee_code', { p_business_id: selectedBusiness.business_id })
+
+        if (codeError) throw codeError
+
+        employeeData.employee_code = codeData
+        employeeData.created_by = user?.id || null
+
+        const { data, error: insertError } = await supabase
+          .from('hrms_employees')
+          .insert(employeeData)
+          .select()
+          .single()
+
+        if (insertError) throw insertError
+        setSavedEmployeeId(data.employee_id)
+      }
+
+      // Save addresses
+      const finalEmployeeId = employeeIdToUse || savedEmployeeId
+      if (finalEmployeeId) {
+        await saveAddresses(finalEmployeeId)
+      }
       
       // Navigate back to employee list
       navigate('/hrms/employees')
     } catch (err) {
       console.error('Error saving employee:', err)
-      setError(err.message)
+      setError(err.message || 'Failed to save employee')
     } finally {
       setSaving(false)
     }
@@ -978,6 +1343,23 @@ function EmployeeForm({ testMode = false }) {
         </div>
       )}
 
+      {/* Success Message */}
+      {successMessage && (
+        <div className="form-success-banner" style={{ 
+          background: '#D1FAE5', 
+          color: '#065F46', 
+          padding: '12px 16px', 
+          borderRadius: '8px', 
+          marginBottom: '16px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px'
+        }}>
+          <CheckIcon style={{ width: '20px', height: '20px' }} />
+          <span>{successMessage}</span>
+        </div>
+      )}
+
       {/* Form */}
       <form onSubmit={handleSubmit} className="employee-form-content">
         {renderStepContent()}
@@ -1001,11 +1383,34 @@ function EmployeeForm({ testMode = false }) {
               Cancel
             </Link>
             
+            {/* Save Progress Button - Show on all steps except review */}
+            {currentStep < FORM_STEPS.length - 1 && (
+              <button 
+                type="button" 
+                className="btn btn-secondary"
+                onClick={handleSaveProgress}
+                disabled={savingProgress || saving}
+              >
+                {savingProgress ? (
+                  <>
+                    <span className="spinner"></span>
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <BookmarkIcon className="btn-icon" style={{ width: '16px', height: '16px' }} />
+                    Save Progress
+                  </>
+                )}
+              </button>
+            )}
+            
             {currentStep < FORM_STEPS.length - 1 ? (
               <button 
                 type="button" 
                 className="btn btn-primary"
                 onClick={handleNext}
+                disabled={savingProgress || saving}
               >
                 Continue
                 <ChevronRightIcon className="btn-icon" />
@@ -1014,7 +1419,7 @@ function EmployeeForm({ testMode = false }) {
               <button 
                 type="submit" 
                 className="btn btn-primary btn-submit"
-                disabled={saving}
+                disabled={saving || savingProgress}
               >
                 {saving ? (
                   <>
