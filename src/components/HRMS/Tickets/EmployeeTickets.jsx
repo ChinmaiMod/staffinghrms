@@ -11,6 +11,7 @@ import { supabase } from '../../../api/supabaseClient'
 import { useTenant } from '../../../contexts/TenantProvider'
 import { useAuth } from '../../../contexts/AuthProvider'
 import LoadingSpinner from '../../Shared/LoadingSpinner'
+import BusinessFilter from '../../Shared/BusinessFilter'
 import './EmployeeTickets.css'
 
 /**
@@ -285,6 +286,9 @@ function EmployeeTickets() {
           <p className="page-subtitle">Manage employee requests and inquiries</p>
         </div>
       </div>
+
+      {/* Business Filter */}
+      <BusinessFilter />
 
       {/* HR / Immigration Tabs */}
       <div className="tickets-tabs">

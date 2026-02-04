@@ -13,6 +13,7 @@ import { supabase } from '../../../api/supabaseClient'
 import { useTenant } from '../../../contexts/TenantProvider'
 import { useAuth } from '../../../contexts/AuthProvider'
 import LoadingSpinner from '../../Shared/LoadingSpinner'
+import BusinessFilter from '../../Shared/BusinessFilter'
 import { useDebounce } from '../../../utils/debounce'
 import './ClientList.css'
 
@@ -178,6 +179,9 @@ function ClientList() {
           </Link>
         </div>
       </div>
+
+      {/* Business Filter */}
+      <BusinessFilter />
 
       {/* Filters */}
       <div className="filters-bar">

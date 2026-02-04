@@ -11,6 +11,7 @@ import {
   ArrowTrendingDownIcon,
 } from '@heroicons/react/24/outline'
 import LoadingSpinner from '../../Shared/LoadingSpinner'
+import BusinessFilter from '../../Shared/BusinessFilter'
 import './Dashboard.css'
 
 /**
@@ -87,6 +88,9 @@ function Dashboard() {
           <span className="welcome-date">{today}</span>
         </div>
       </div>
+
+      {/* Business Filter */}
+      <BusinessFilter />
 
       {/* Statistics Cards */}
       <div className="dashboard-stats-grid">

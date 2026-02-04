@@ -10,6 +10,7 @@ import {
 import { supabase } from '../../../api/supabaseClient'
 import { useTenant } from '../../../contexts/TenantProvider'
 import LoadingSpinner from '../../Shared/LoadingSpinner'
+import BusinessFilter from '../../Shared/BusinessFilter'
 import { useDebounce } from '../../../utils/debounce'
 import './TimesheetList.css'
 
@@ -360,6 +361,9 @@ function TimesheetList({ testMode = false }) {
           </button>
         </div>
       </div>
+
+      {/* Business Filter */}
+      <BusinessFilter />
 
       {/* Filters */}
       <div className="filters-bar">

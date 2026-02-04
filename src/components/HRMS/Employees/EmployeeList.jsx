@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../../../api/supabaseClient'
 import { useTenant } from '../../../contexts/TenantProvider'
 import LoadingSpinner from '../../Shared/LoadingSpinner'
+import BusinessFilter from '../../Shared/BusinessFilter'
 import { useDebounce } from '../../../utils/debounce'
 import {
   MagnifyingGlassIcon,
@@ -362,6 +363,8 @@ function EmployeeList({ testMode = false }) {
         </div>
       </div>
 
+      {/* Business Filter */}
+      <BusinessFilter />
 
       {/* Filters Bar */}
       <div className="filters-bar">

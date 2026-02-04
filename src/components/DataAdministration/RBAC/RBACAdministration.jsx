@@ -662,7 +662,9 @@ function RBACAdministration() {
   };
 
   const handleSelectAllMenus = () => {
-    setSelectedMenuItems(menuItems.map(item => item.menu_item_id));
+    // Only select active menu items (matching what's displayed in the UI)
+    const activeMenuItems = menuItems.filter(m => m.is_active);
+    setSelectedMenuItems(activeMenuItems.map(item => item.menu_item_id));
   };
 
   const handleDeselectAllMenus = () => {
@@ -1273,16 +1275,40 @@ function RBACAdministration() {
           </div>
 
           <div className="role-summary-grid">
-            {roles.map(role => {
-              const accessibleMenus = menuItems.filter(m => 
-                m.is_active && rolePermissions[role.role_id]?.[m.menu_item_id]
-              );
-              const totalActiveMenus = menuItems.filter(m => m.is_active).length;
-              const accessPercentage = totalActiveMenus > 0 
-                ? Math.round((accessibleMenus.length / totalActiveMenus) * 100) 
-                : 0;
+            {roles.length === 0 ? (
+              <div className="empty-state" style={{ 
+                gridColumn: '1 / -1', 
+                textAlign: 'center', 
+                padding: '3rem',
+                background: 'white',
+                borderRadius: '8px',
+                border: '2px dashed #e2e8f0'
+              }}>
+                <h3 style={{ color: '#64748b', marginBottom: '1rem' }}>No Roles Found</h3>
+                <p style={{ color: '#94a3b8', marginBottom: '1.5rem' }}>
+                  You need to create roles first before you can view role summaries.
+                </p>
+                <button 
+                  className="btn-primary" 
+                  onClick={() => {
+                    setActiveTab('user-roles');
+                    openCreateRoleModal();
+                  }}
+                >
+                  ➕ Create Your First Role
+                </button>
+              </div>
+            ) : (
+              roles.map(role => {
+                const accessibleMenus = menuItems.filter(m => 
+                  m.is_active && rolePermissions[role.role_id]?.[m.menu_item_id]
+                );
+                const totalActiveMenus = menuItems.filter(m => m.is_active).length;
+                const accessPercentage = totalActiveMenus > 0 
+                  ? Math.round((accessibleMenus.length / totalActiveMenus) * 100) 
+                  : 0;
 
-              return (
+                return (
                 <div key={role.role_id} className="role-summary-card">
                   <div className="role-summary-header">
                     <div 
@@ -1348,7 +1374,8 @@ function RBACAdministration() {
                   </div>
                 </div>
               );
-            })}
+            })
+            )}
           </div>
         </div>
       )}
@@ -1593,17 +1620,47 @@ function RBACAdministration() {
                 <section className="form-section">
                   <h3>Page Access</h3>
                   <div className="menu-actions">
-                    <button type="button" className="btn-secondary" onClick={handleSelectAllMenus}>Select All</button>
-                    <button type="button" className="btn-secondary" onClick={handleDeselectAllMenus}>Deselect All</button>
+                    <button 
+                      type="button" 
+                      className="btn-secondary" 
+                      onClick={handleSelectAllMenus}
+                      disabled={menuItems.filter(m => m.is_active).length === 0}
+                    >
+                      Select All
+                    </button>
+                    <button 
+                      type="button" 
+                      className="btn-secondary" 
+                      onClick={handleDeselectAllMenus}
+                      disabled={selectedMenuItems.length === 0}
+                    >
+                      Deselect All
+                    </button>
                   </div>
                   <div className="menu-items-list">
-                    {menuItems.filter(m => m.is_active).map(item => (
-                      <label key={item.menu_item_id} className="checkbox-label menu-item-checkbox">
-                        <input type="checkbox" checked={selectedMenuItems.includes(item.menu_item_id)}
-                          onChange={() => handleMenuItemToggle(item.menu_item_id)} />
-                        <span>{item.icon} {item.item_name} {item.item_path && <code className="menu-path">{item.item_path}</code>}</span>
-                      </label>
-                    ))}
+                    {menuItems.filter(m => m.is_active).length === 0 ? (
+                      <div className="empty-state">
+                        <p>No menu items available. Please create menu items in the "Menu Items" tab first.</p>
+                        <button 
+                          type="button" 
+                          className="btn-secondary" 
+                          onClick={() => {
+                            setShowRoleModal(false);
+                            setActiveTab('menu-items');
+                          }}
+                        >
+                          Go to Menu Items
+                        </button>
+                      </div>
+                    ) : (
+                      menuItems.filter(m => m.is_active).map(item => (
+                        <label key={item.menu_item_id} className="checkbox-label menu-item-checkbox">
+                          <input type="checkbox" checked={selectedMenuItems.includes(item.menu_item_id)}
+                            onChange={() => handleMenuItemToggle(item.menu_item_id)} />
+                          <span>{item.icon} {item.item_name} {item.item_path && <code className="menu-path">{item.item_path}</code>}</span>
+                        </label>
+                      ))
+                    )}
                   </div>
                 </section>
               </div>
