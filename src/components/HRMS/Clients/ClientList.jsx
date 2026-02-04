@@ -167,6 +167,9 @@ function ClientList() {
 
   return (
     <div className="client-list-container">
+      {/* Business Filter */}
+      <BusinessFilter />
+
       <div className="client-list-header">
         <div>
           <h1 className="page-title">Client Management</h1>
@@ -179,9 +182,6 @@ function ClientList() {
           </Link>
         </div>
       </div>
-
-      {/* Business Filter */}
-      <BusinessFilter />
 
       {/* Filters */}
       <div className="filters-bar">

@@ -100,6 +100,9 @@ function ComplianceDashboard() {
 
   return (
     <div className="compliance-dashboard-container">
+      {/* Business Filter */}
+      <BusinessFilter />
+
       {/* Page Header */}
       <div className="compliance-header">
         <div>
@@ -113,9 +116,6 @@ function ComplianceDashboard() {
           </button>
         </div>
       </div>
-
-      {/* Business Filter */}
-      <BusinessFilter />
 
       {/* Summary Cards */}
       <div className="compliance-summary-grid">

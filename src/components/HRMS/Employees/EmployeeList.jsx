@@ -342,6 +342,9 @@ function EmployeeList({ testMode = false }) {
         </div>
       )}
 
+      {/* Business Filter */}
+      <BusinessFilter />
+
       {/* Page Header */}
       <div className="employee-list-header">
         <div>
@@ -362,9 +365,6 @@ function EmployeeList({ testMode = false }) {
           </Link>
         </div>
       </div>
-
-      {/* Business Filter */}
-      <BusinessFilter />
 
       {/* Filters Bar */}
       <div className="filters-bar">

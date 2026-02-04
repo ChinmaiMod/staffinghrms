@@ -290,6 +290,9 @@ function ProjectList({ testMode = false }) {
 
   return (
     <div className="project-list-container">
+      {/* Business Filter */}
+      <BusinessFilter />
+
       <div className="project-list-header">
         <div>
           <h1 className="page-title">Employee Projects</h1>
@@ -310,9 +313,6 @@ function ProjectList({ testMode = false }) {
           </Link>
         </div>
       </div>
-
-      {/* Business Filter */}
-      <BusinessFilter />
 
       {/* Filters */}
       <div className="filters-bar">

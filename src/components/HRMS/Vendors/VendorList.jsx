@@ -215,6 +215,9 @@ function VendorList({ testMode = false }) {
 
   return (
     <div className="vendor-list-container">
+      {/* Business Filter */}
+      <BusinessFilter />
+
       <div className="vendor-list-header">
         <div>
           <h1 className="page-title">Vendor Management</h1>
@@ -235,9 +238,6 @@ function VendorList({ testMode = false }) {
           </Link>
         </div>
       </div>
-
-      {/* Business Filter */}
-      <BusinessFilter />
 
       {/* Filters */}
       <div className="filters-bar">

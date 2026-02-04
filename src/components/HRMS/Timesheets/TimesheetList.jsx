@@ -349,6 +349,9 @@ function TimesheetList({ testMode = false }) {
 
   return (
     <div className="timesheet-list-container">
+      {/* Business Filter */}
+      <BusinessFilter />
+
       <div className="timesheet-list-header">
         <div>
           <h1 className="page-title">Timesheets</h1>
@@ -361,9 +364,6 @@ function TimesheetList({ testMode = false }) {
           </button>
         </div>
       </div>
-
-      {/* Business Filter */}
-      <BusinessFilter />
 
       {/* Filters */}
       <div className="filters-bar">

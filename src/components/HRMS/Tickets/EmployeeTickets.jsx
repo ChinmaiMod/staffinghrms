@@ -279,6 +279,9 @@ function EmployeeTickets() {
 
   return (
     <div className="employee-tickets-container">
+      {/* Business Filter */}
+      <BusinessFilter />
+
       {/* Header */}
       <div className="employee-tickets-header">
         <div>
@@ -286,9 +289,6 @@ function EmployeeTickets() {
           <p className="page-subtitle">Manage employee requests and inquiries</p>
         </div>
       </div>
-
-      {/* Business Filter */}
-      <BusinessFilter />
 
       {/* HR / Immigration Tabs */}
       <div className="tickets-tabs">

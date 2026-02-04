@@ -411,6 +411,9 @@ function DocumentList() {
 
   return (
     <div className="document-list" data-testid="document-list">
+      {/* Business Filter */}
+      <BusinessFilter />
+
       {/* Header */}
       <div className="document-list-header">
         <div>
@@ -428,9 +431,6 @@ function DocumentList() {
           Upload Doc
         </button>
       </div>
-
-      {/* Business Filter */}
-      <BusinessFilter />
 
       {/* Filters */}
       <div className="document-list-filters">

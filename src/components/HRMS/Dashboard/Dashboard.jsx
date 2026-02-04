@@ -78,6 +78,9 @@ function Dashboard() {
 
   return (
     <div className="dashboard-container">
+      {/* Business Filter */}
+      <BusinessFilter />
+
       {/* Welcome Section */}
       <div className="dashboard-welcome">
         <div className="welcome-left">
@@ -88,9 +91,6 @@ function Dashboard() {
           <span className="welcome-date">{today}</span>
         </div>
       </div>
-
-      {/* Business Filter */}
-      <BusinessFilter />
 
       {/* Statistics Cards */}
       <div className="dashboard-stats-grid">
